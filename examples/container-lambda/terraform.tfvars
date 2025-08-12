@@ -1,0 +1,6 @@
+aws_region          = "us-east-1"
+function_name       = "container-lambda-example"
+ecr_repository_name = "lambda-container-example"
+image_tag           = "v1.0.0"
+environment         = "dev"
+log_level           = "INFO"
