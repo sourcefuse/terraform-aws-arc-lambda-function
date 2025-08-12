@@ -2,37 +2,37 @@
 # LAMBDA FUNCTION OUTPUTS
 # =============================================================================
 
-output "lambda_function_arn" {
+output "arn" {
   description = "ARN of the Lambda function"
   value       = module.complete_lambda.lambda_function_arn
 }
 
-output "lambda_function_name" {
+output "name" {
   description = "Name of the Lambda function"
   value       = module.complete_lambda.lambda_function_name
 }
 
-output "lambda_function_version" {
+output "version" {
   description = "Published version of the Lambda function"
   value       = module.complete_lambda.lambda_function_version
 }
 
-output "lambda_alias_arn" {
+output "alias_arn" {
   description = "ARN of the Lambda alias"
   value       = module.complete_lambda.lambda_alias_arn
 }
 
-output "lambda_alias_name" {
+output "alias_name" {
   description = "Name of the Lambda alias"
   value       = module.complete_lambda.lambda_alias_name
 }
 
-output "lambda_role_arn" {
+output "role_arn" {
   description = "ARN of the Lambda execution role"
   value       = module.complete_lambda.lambda_role_arn
 }
 
-output "lambda_function_url" {
+output "url" {
   description = "Lambda function URL (if enabled)"
   value       = var.enable_function_url ? module.complete_lambda.lambda_function_url : null
 }

@@ -17,6 +17,3 @@ file_extension_filter = ".txt"
 
 # Monitoring Configuration
 enable_lambda_insights = true
-
-# Optional: SNS topic ARN for CloudWatch alarms
-# sns_topic_arn = "arn:aws:sns:us-east-1:123456789012:lambda-alerts"

@@ -1,19 +1,19 @@
-output "lambda_function_arn" {
+output "arn" {
   description = "ARN of the Lambda function"
   value       = module.container_lambda.lambda_function_arn
 }
 
-output "lambda_function_name" {
+output "name" {
   description = "Name of the Lambda function"
   value       = module.container_lambda.lambda_function_name
 }
 
-output "lambda_function_version" {
+output "version" {
   description = "Version of the Lambda function"
   value       = module.container_lambda.lambda_function_version
 }
 
-output "lambda_role_arn" {
+output "role_arn" {
   description = "ARN of the Lambda execution role"
   value       = module.container_lambda.lambda_role_arn
 }
