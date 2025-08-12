@@ -16,6 +16,17 @@ terraform {
 provider "aws" {
   region = var.aws_region
 }
+module "tags" {
+  source  = "sourcefuse/arc-tags/aws"
+  version = "1.2.6"
+
+  environment = terraform.workspace
+  project     = "terraform-aws-arc-lambda"
+
+  extra_tags = {
+    Example = "True"
+  }
+}
 
 # Get current AWS account ID and region
 data "aws_caller_identity" "current" {}
@@ -167,15 +178,7 @@ module "container_lambda" {
   # Versioning
   publish = true
 
-  # Tags
-  tags = {
-    Environment    = var.environment
-    Project        = "lambda-terraform-module"
-    Example        = "container-lambda"
-    DeploymentType = "container"
-    ImageTag       = var.image_tag
-    ManagedBy      = "terraform"
-  }
+  tags = module.tags.tags
 
   depends_on = [docker_registry_image.lambda_container]
 }

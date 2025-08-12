@@ -1,8 +1,3 @@
-# =============================================================================
-# COMPLETE LAMBDA EXAMPLE CONFIGURATION
-# This file demonstrates ALL features of the Lambda Terraform module
-# =============================================================================
-region      = "us-east-1"
 environment = "develop"
 namespace   = "arc"
 # Basic Configuration
@@ -15,17 +10,14 @@ log_level        = "INFO"
 memory_size = 1024 # Higher memory for better performance
 timeout     = 60   # Longer timeout for complex operations
 
-# Database Configuration
-db_password = "CompleteExample2024!" # Change this for production use
-
 # S3 Configuration (MUST be globally unique)
 s3_bucket_name = "complete-lambda-example-bucket-12345" # Change this to a unique name
 
 # Dead Letter Queue Configuration
 dlq_retention_seconds = 1209600 # 14 days
 
-alias_name                        = "production"
-provisioned_concurrent_executions = 5
+alias_name = "production"
+
 
 # API Gateway Configuration
 api_stage_name = "prod"

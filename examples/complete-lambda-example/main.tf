@@ -479,19 +479,12 @@ module "complete_lambda" {
     }
   }
 
-  # Lambda Insights for advanced monitoring
   lambda_insights_enabled = true
+  create_log_group        = true
+  log_retention_in_days   = var.log_retention_days
 
-  # CloudWatch Logs
-  create_log_group      = true
-  log_retention_in_days = var.log_retention_days
-  # log_group_kms_key_id   = aws_kms_key.lambda_key.arn
 
-  # Comprehensive tags
-  tags = {
-    Environment = var.environment
-    Project     = "lambda-terraform-module"
-  }
+  tags = module.tags.tags
 
   depends_on = [
     module.rds

@@ -9,14 +9,6 @@ This example demonstrates how to create a simple AWS Lambda function using the L
 - CloudWatch log group with 7-day retention
 - Simple Python function that returns a JSON response
 
-## Features Demonstrated
-
-- Local source code deployment using `archive_file` data source
-- Environment variables configuration
-- Basic CloudWatch logging setup
-- Minimal IAM permissions
-- Resource tagging
-
 ## Usage
 
 1. **Initialize Terraform:**
@@ -49,56 +41,51 @@ This example demonstrates how to create a simple AWS Lambda function using the L
    terraform destroy
    ```
 
-## Configuration
+<!-- BEGIN_TF_DOCS -->
+## Requirements
 
-The example can be customized by modifying the variables in `terraform.tfvars`:
+| Name | Version |
+|------|---------|
+| <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) | >= 1.3.0 |
+| <a name="requirement_archive"></a> [archive](#requirement\_archive) | >= 2.0 |
+| <a name="requirement_aws"></a> [aws](#requirement\_aws) | >= 5.0 |
 
-| Variable | Description | Default |
-|----------|-------------|---------|
-| `aws_region` | AWS region for resources | `us-east-1` |
-| `function_name` | Name of the Lambda function | `basic-lambda-example` |
-| `environment` | Environment name | `dev` |
-| `log_level` | Log level for the function | `INFO` |
-| `lambda_message` | Message returned by the function | `Hello from Basic Lambda!` |
+## Providers
 
-## Function Code
+| Name | Version |
+|------|---------|
+| <a name="provider_archive"></a> [archive](#provider\_archive) | 2.7.1 |
 
-The Lambda function (`lambda_function.py`) is a simple Python function that:
+## Modules
 
-- Logs the incoming event
-- Reads environment variables
-- Returns a JSON response with function metadata
-- Includes proper error handling and logging
+| Name | Source | Version |
+|------|--------|---------|
+| <a name="module_basic_lambda"></a> [basic\_lambda](#module\_basic\_lambda) | ../../ | n/a |
+| <a name="module_tags"></a> [tags](#module\_tags) | sourcefuse/arc-tags/aws | 1.2.6 |
 
-## Expected Output
+## Resources
 
-When invoked, the function returns a response like:
+| Name | Type |
+|------|------|
+| [archive_file.lambda_zip](https://registry.terraform.io/providers/hashicorp/archive/latest/docs/data-sources/file) | data source |
 
-```json
-{
-  "statusCode": 200,
-  "headers": {
-    "Content-Type": "application/json",
-    "Access-Control-Allow-Origin": "*"
-  },
-  "body": "{\"message\":\"Hello from Basic Lambda Example!\",\"environment\":\"dev\",\"function_name\":\"basic-lambda-example\",\"function_version\":\"$LATEST\",\"request_id\":\"12345678-1234-1234-1234-123456789012\",\"event\":{\"test\":\"data\"}}"
-}
-```
+## Inputs
 
-## Cost Considerations
+| Name | Description | Type | Default | Required |
+|------|-------------|------|---------|:--------:|
+| <a name="input_aws_region"></a> [aws\_region](#input\_aws\_region) | AWS region for resources | `string` | `"us-east-1"` | no |
+| <a name="input_environment"></a> [environment](#input\_environment) | Environment name | `string` | `"dev"` | no |
+| <a name="input_function_name"></a> [function\_name](#input\_function\_name) | Name of the Lambda function | `string` | `"basic-lambda-example"` | no |
+| <a name="input_lambda_message"></a> [lambda\_message](#input\_lambda\_message) | Message to be returned by the Lambda function | `string` | `"Hello from Basic Lambda!"` | no |
+| <a name="input_log_level"></a> [log\_level](#input\_log\_level) | Log level for the Lambda function | `string` | `"INFO"` | no |
 
-This example uses minimal resources:
-- Lambda function with 128MB memory
-- CloudWatch logs with 7-day retention
-- No provisioned concurrency or additional features
+## Outputs
 
-Estimated monthly cost for light usage: < $1 USD
-
-## Next Steps
-
-After running this basic example, you can explore more advanced features:
-
-- [S3 Lambda Example](../s3-lambda/) - Deploy from S3
-- [Container Lambda Example](../container-lambda/) - Use container images
-- [Lambda with VPC](../lambda-in-vpc/) - VPC configuration
-- [Lambda with DLQ](../lambda-with-dlq/) - Error handling
+| Name | Description |
+|------|-------------|
+| <a name="output_lambda_cloudwatch_log_group_name"></a> [lambda\_cloudwatch\_log\_group\_name](#output\_lambda\_cloudwatch\_log\_group\_name) | Name of the CloudWatch log group |
+| <a name="output_lambda_function_arn"></a> [lambda\_function\_arn](#output\_lambda\_function\_arn) | ARN of the Lambda function |
+| <a name="output_lambda_function_invoke_arn"></a> [lambda\_function\_invoke\_arn](#output\_lambda\_function\_invoke\_arn) | Invoke ARN of the Lambda function |
+| <a name="output_lambda_function_name"></a> [lambda\_function\_name](#output\_lambda\_function\_name) | Name of the Lambda function |
+| <a name="output_lambda_role_arn"></a> [lambda\_role\_arn](#output\_lambda\_role\_arn) | ARN of the Lambda execution role |
+<!-- END_TF_DOCS -->

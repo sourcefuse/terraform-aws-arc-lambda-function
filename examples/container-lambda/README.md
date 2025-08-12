@@ -10,34 +10,6 @@ This example demonstrates how to deploy an AWS Lambda function using container i
 - IAM role with ECR and SSM permissions
 - CloudWatch log group with 30-day retention
 
-## Features Demonstrated
-
-- Container-based Lambda deployment
-- ECR repository management with lifecycle policies
-- Docker image building and pushing via Terraform
-- Advanced Python application with dependencies
-- External API integration
-- AWS Systems Manager Parameter Store integration
-- Structured logging with JSON output
-- Pydantic for request/response validation
-- Multiple action handlers
-
-## Architecture
-
-```
-┌─────────────────┐    ┌──────────────────┐    ┌─────────────────┐
-│   Dockerfile    │───▶│   ECR Repository │───▶│  Lambda Function│
-│   (builds)      │    │  (stores image)  │    │  (executes)     │
-└─────────────────┘    └──────────────────┘    └─────────────────┘
-         │                       │                        │
-         │                       │                        │
-         ▼                       ▼                        ▼
-┌─────────────────┐    ┌──────────────────┐    ┌─────────────────┐
-│  Python App +   │    │  Image Lifecycle │    │ CloudWatch Logs │
-│  Dependencies   │    │     Policies     │    │   (30 days)     │
-└─────────────────┘    └──────────────────┘    └─────────────────┘
-```
-
 ## Prerequisites
 
 - Docker installed and running
@@ -68,208 +40,62 @@ This example demonstrates how to deploy an AWS Lambda function using container i
 
    Note: The first apply may take several minutes as it builds and pushes the Docker image.
 
-5. **Test the function with different actions:**
+<!-- BEGIN_TF_DOCS -->
+## Requirements
 
-   **Health Check:**
-   ```bash
-   aws lambda invoke \
-     --function-name container-lambda-example \
-     --payload '{"action": "health"}' \
-     response.json && cat response.json | jq .
-   ```
+| Name | Version |
+|------|---------|
+| <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) | >= 1.3.0 |
+| <a name="requirement_aws"></a> [aws](#requirement\_aws) | >= 5.0 |
+| <a name="requirement_docker"></a> [docker](#requirement\_docker) | >= 3.0 |
 
-   **Echo Test:**
-   ```bash
-   aws lambda invoke \
-     --function-name container-lambda-example \
-     --payload '{"action": "echo", "payload": {"message": "Hello Container Lambda!"}}' \
-     response.json && cat response.json | jq .
-   ```
+## Providers
 
-   **External API Call:**
-   ```bash
-   aws lambda invoke \
-     --function-name container-lambda-example \
-     --payload '{"action": "external_api", "payload": {"url": "https://httpbin.org/json"}}' \
-     response.json && cat response.json | jq .
-   ```
+| Name | Version |
+|------|---------|
+| <a name="provider_aws"></a> [aws](#provider\_aws) | 6.7.0 |
+| <a name="provider_docker"></a> [docker](#provider\_docker) | 3.6.2 |
 
-   **Parameter Store Demo:**
-   ```bash
-   aws lambda invoke \
-     --function-name container-lambda-example \
-     --payload '{"action": "parameter_demo"}' \
-     response.json && cat response.json | jq .
-   ```
+## Modules
 
-6. **Clean up:**
-   ```bash
-   terraform destroy
-   ```
+| Name | Source | Version |
+|------|--------|---------|
+| <a name="module_container_lambda"></a> [container\_lambda](#module\_container\_lambda) | ../../ | n/a |
+| <a name="module_tags"></a> [tags](#module\_tags) | sourcefuse/arc-tags/aws | 1.2.6 |
 
-## Configuration
+## Resources
 
-| Variable | Description | Default |
-|----------|-------------|---------|
-| `aws_region` | AWS region for resources | `us-east-1` |
-| `function_name` | Name of the Lambda function | `container-lambda-example` |
-| `ecr_repository_name` | ECR repository name | `lambda-container-example` |
-| `image_tag` | Container image tag | `v1.0.0` |
-| `environment` | Environment name | `dev` |
-| `log_level` | Log level for the function | `INFO` |
+| Name | Type |
+|------|------|
+| [aws_ecr_lifecycle_policy.lambda_container](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/ecr_lifecycle_policy) | resource |
+| [aws_ecr_repository.lambda_container](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/ecr_repository) | resource |
+| [docker_image.lambda_container](https://registry.terraform.io/providers/kreuzwerker/docker/latest/docs/resources/image) | resource |
+| [docker_registry_image.lambda_container](https://registry.terraform.io/providers/kreuzwerker/docker/latest/docs/resources/registry_image) | resource |
+| [aws_caller_identity.current](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/caller_identity) | data source |
+| [aws_ecr_authorization_token.token](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/ecr_authorization_token) | data source |
+| [aws_region.current](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/region) | data source |
 
-## Container Image Details
+## Inputs
 
-### Base Image
-- Uses `public.ecr.aws/lambda/python:3.11` (official AWS Lambda Python runtime)
-- Optimized for Lambda execution environment
-- Includes Lambda Runtime Interface Client
+| Name | Description | Type | Default | Required |
+|------|-------------|------|---------|:--------:|
+| <a name="input_aws_region"></a> [aws\_region](#input\_aws\_region) | AWS region for resources | `string` | `"us-east-1"` | no |
+| <a name="input_ecr_repository_name"></a> [ecr\_repository\_name](#input\_ecr\_repository\_name) | Name of the ECR repository | `string` | `"lambda-container-example"` | no |
+| <a name="input_environment"></a> [environment](#input\_environment) | Environment name | `string` | `"dev"` | no |
+| <a name="input_function_name"></a> [function\_name](#input\_function\_name) | Name of the Lambda function | `string` | `"container-lambda-example"` | no |
+| <a name="input_image_tag"></a> [image\_tag](#input\_image\_tag) | Tag for the container image | `string` | `"latest"` | no |
+| <a name="input_log_level"></a> [log\_level](#input\_log\_level) | Log level for the Lambda function | `string` | `"INFO"` | no |
 
-### Dependencies
-- **boto3/botocore**: AWS SDK for Python
-- **requests**: HTTP library for external API calls
-- **pydantic**: Data validation and settings management
-- **python-json-logger**: Structured JSON logging
+## Outputs
 
-### Build Process
-1. **Dockerfile**: Defines the container image
-2. **Requirements**: Installs Python dependencies
-3. **Application Code**: Copies the main application
-4. **Configuration**: Sets environment variables and handler
-
-## Function Actions
-
-The Lambda function supports multiple actions:
-
-### 1. Health Check (`health`)
-Returns system information and health status:
-```json
-{
-  "action": "health"
-}
-```
-
-### 2. Echo (`echo`)
-Echoes back the provided payload:
-```json
-{
-  "action": "echo",
-  "payload": {"message": "test"}
-}
-```
-
-### 3. External API (`external_api`)
-Makes HTTP requests to external APIs:
-```json
-{
-  "action": "external_api",
-  "payload": {"url": "https://httpbin.org/json"}
-}
-```
-
-### 4. Parameter Demo (`parameter_demo`)
-Demonstrates AWS Systems Manager Parameter Store integration:
-```json
-{
-  "action": "parameter_demo"
-}
-```
-
-## ECR Repository Configuration
-
-The ECR repository includes:
-
-- **Image Scanning**: Enabled for security vulnerability detection
-- **Lifecycle Policies**:
-  - Keep last 10 tagged images
-  - Delete untagged images after 1 day
-- **Mutable Tags**: Allows tag updates for development
-
-## IAM Permissions
-
-The Lambda function has permissions for:
-
-- **ECR Access**: Pull container images
-- **SSM Access**: Read parameters from Parameter Store
-- **CloudWatch Logs**: Write function logs
-
-## Local Development
-
-You can test the function locally:
-
-```bash
-cd examples/container-lambda
-python app.py
-```
-
-This runs the function with mock events and context.
-
-## Monitoring and Debugging
-
-### CloudWatch Logs
-```bash
-aws logs tail /aws/lambda/container-lambda-example --follow
-```
-
-### Container Image Information
-```bash
-# List images in ECR
-aws ecr list-images --repository-name lambda-container-example
-
-# Get image details
-aws ecr describe-images --repository-name lambda-container-example
-```
-
-### Function Configuration
-```bash
-aws lambda get-function --function-name container-lambda-example
-```
-
-## Cost Considerations
-
-- **ECR Storage**: Container image storage costs
-- **Lambda Execution**: 512MB memory allocation
-- **CloudWatch Logs**: 30-day retention
-- **ECR Data Transfer**: Image pulls during cold starts
-
-Estimated monthly cost for moderate usage: $3-8 USD
-
-## Troubleshooting
-
-### Common Issues
-
-1. **Docker Build Failures**: Ensure Docker is running and has sufficient resources
-2. **ECR Push Failures**: Verify AWS credentials and ECR permissions
-3. **Lambda Cold Starts**: Container images have longer cold start times
-4. **Image Size**: Keep images under 10GB limit
-
-### Build Optimization
-
-- Use multi-stage builds to reduce image size
-- Leverage Docker layer caching
-- Minimize the number of RUN commands
-- Use `.dockerignore` to exclude unnecessary files
-
-## Advanced Features
-
-### Custom Parameters
-Create parameters in SSM Parameter Store:
-```bash
-aws ssm put-parameter \
-  --name "/container-lambda-example/config/demo_setting" \
-  --value "custom_value" \
-  --type "String"
-```
-
-### Image Updates
-To update the function with a new image:
-1. Modify the code
-2. Update `image_tag` in `terraform.tfvars`
-3. Run `terraform apply`
-
-## Next Steps
-
-- [Lambda with Alias](../lambda-with-alias/) - Versioning and aliases
-- [Lambda with Provisioned Concurrency](../lambda-with-provisioned-concurrency/) - Performance optimization
-- [Lambda in VPC](../lambda-in-vpc/) - Network isolation
-- [Lambda with DLQ](../lambda-with-dlq/) - Error handling
+| Name | Description |
+|------|-------------|
+| <a name="output_container_image_uri"></a> [container\_image\_uri](#output\_container\_image\_uri) | URI of the container image used by Lambda |
+| <a name="output_docker_image_id"></a> [docker\_image\_id](#output\_docker\_image\_id) | ID of the Docker image |
+| <a name="output_ecr_repository_arn"></a> [ecr\_repository\_arn](#output\_ecr\_repository\_arn) | ARN of the ECR repository |
+| <a name="output_ecr_repository_url"></a> [ecr\_repository\_url](#output\_ecr\_repository\_url) | URL of the ECR repository |
+| <a name="output_lambda_function_arn"></a> [lambda\_function\_arn](#output\_lambda\_function\_arn) | ARN of the Lambda function |
+| <a name="output_lambda_function_name"></a> [lambda\_function\_name](#output\_lambda\_function\_name) | Name of the Lambda function |
+| <a name="output_lambda_function_version"></a> [lambda\_function\_version](#output\_lambda\_function\_version) | Version of the Lambda function |
+| <a name="output_lambda_role_arn"></a> [lambda\_role\_arn](#output\_lambda\_role\_arn) | ARN of the Lambda execution role |
+<!-- END_TF_DOCS -->

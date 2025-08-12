@@ -1,7 +1,3 @@
-# =============================================================================
-# LOCAL VALUES FOR LOGIC CONSOLIDATION
-# =============================================================================
-
 locals {
   # Function naming
   function_name  = var.function_name

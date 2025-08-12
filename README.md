@@ -1,20 +1,157 @@
-# terraform-aws-module-template
+![Module Structure](./static/banner.png)
+# AWS Lambda Function Terraform Module
+
+# [terraform-aws-arc-lambda-function](https://github.com/sourcefuse/terraform-aws-arc-lambda-function)
+
+<a href="https://github.com/sourcefuse/terraform-aws-arc-lambda-function/releases/latest"><img src="https://img.shields.io/github/release/sourcefuse/terraform-aws-arc-lambda-function.svg?style=for-the-badge" alt="Latest Release"/></a> <a href="https://github.com/sourcefuse/terraform-aws-arc-lambda-function/commits"><img src="https://img.shields.io/github/last-commit/sourcefuse/terraform-aws-arc-lambda-function.svg?style=for-the-badge" alt="Last Updated"/></a> ![Terraform](https://img.shields.io/badge/terraform-%235835CC.svg?style=for-the-badge&logo=terraform&logoColor=white) ![GitHub Actions](https://img.shields.io/badge/github%20actions-%232671E5.svg?style=for-the-badge&logo=githubactions&logoColor=white)
+
+[![Quality gate](https://sonarcloud.io/api/project_badges/quality_gate?project=sourcefuse_terraform-aws-arc-lambda-function&token=2eef08aeb73594436eea462afe0bd790c9ae3841)](https://sonarcloud.io/summary/new_code?id=sourcefuse_terraform-aws-arc-lambda-function)
+
 
 ## Overview
 
-SourceFuse AWS Reference Architecture (ARC) Terraform module for managing _________.
+The ARC Terraform-aws-arc-lambda module provides a comprehensive and unified solution for deploying AWS Lambda serverless computing infrastructure on AWS. This versatile module supports multiple deployment methods including local source code, S3-based deployments, and container images, allowing you to choose the deployment approach that best fits your application requirements and operational needs.
 
-## Usage
+### Prerequisites
+Before using this module, ensure you have the following:
 
-To see a full example, check out the [main.tf](./example/main.tf) file in the example folder.  
+- AWS credentials configured.
+- Terraform installed.
+- A working knowledge of Terraform.
+
+## Getting Started
+
+1. **Define the Module**
+
+Initially, it's essential to define a Terraform module, which is organized as a distinct directory encompassing Terraform configuration files. Within this module directory, input variables and output values must be defined in the variables.tf and outputs.tf files, respectively. The following illustrates an example directory structure:
+
+
+
+```plaintext
+lambda-function/
+|-- main.tf
+|-- variables.tf
+|-- outputs.tf
+```
+
+
+2. **Define Input Variables**
+
+Inside the `variables.tf` or in `*.tfvars` file, you should define values for the variables that the module requires.
+
+3. **Use the Module in Your Main Configuration**
+In your main Terraform configuration file (e.g., main.tf), you can use the module. Specify the source of the module, and version, For Example
 
 ```hcl
-module "this" {
-  source = "git::https://github.com/sourcefuse/terraform-aws-refarch-<module_name>"
+module "lambda-function" {
+  source                 = "sourcefuse/arc-lambda-function/aws"
+  version                = "0.0.1"
+
+  # Basic configuration
+  function_name = var.function_name
+  description   = "Basic Lambda function example"
+  runtime       = "python3.11"
+  handler       = "lambda_function.lambda_handler"
+  memory_size   = 128
+  timeout       = 10
+
+  # Deployment package
+  filename         = data.archive_file.lambda_zip.output_path
+  source_code_hash = data.archive_file.lambda_zip.output_base64sha256
+
+  # Environment variables
+  environment_variables = {
+    ENVIRONMENT = var.environment
+    LOG_LEVEL   = var.log_level
+  }
+
+  # CloudWatch Logs
+  create_log_group      = true
+  log_retention_in_days = 7
+
+ tags = module.tags.tags
 }
 ```
 
-<!-- BEGINNING OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
+4. **Output Values**
+
+Inside the `outputs.tf` file of the module, you can define output values that can be referenced in the main configuration. For example:
+
+```hcl
+output "arn" {
+  description = "ARN of the Lambda function"
+  value       = module.basic_lambda.lambda_function_arn
+}
+
+output "name" {
+  description = "Name of the Lambda function"
+  value       = module.basic_lambda.lambda_function_name
+}
+
+output "invoke_arn" {
+  description = "Invoke ARN of the Lambda function"
+  value       = module.basic_lambda.lambda_function_invoke_arn
+}
+
+output "role_arn" {
+  description = "ARN of the Lambda execution role"
+  value       = module.basic_lambda.lambda_role_arn
+}
+
+output "cloudwatch_log_group_name" {
+  description = "Name of the CloudWatch log group"
+  value       = module.basic_lambda.lambda_cloudwatch_log_group_name
+}
+
+```
+
+5. **.tfvars**
+
+Inside the `.tfvars` file of the module, you can provide desired values that can be referenced in the main configuration.
+
+
+## First Time Usage
+***uncomment the backend block in [main.tf](./examples/endpoint//main.tf)***
+```shell
+terraform init -backend-config=config.dev.hcl
+```
+***If testing locally, `terraform init` should be fine***
+
+Create a `dev` workspace
+```shell
+terraform workspace new dev
+```
+
+Plan Terraform
+```shell
+terraform plan -var-file dev.tfvars
+```
+
+Apply Terraform
+```shell
+terraform apply -var-file dev.tfvars
+```
+
+## Production Setup
+```shell
+terraform init -backend-config=config.prod.hcl
+```
+
+Create a `prod` workspace
+```shell
+terraform workspace new prod
+```
+
+Plan Terraform
+```shell
+terraform plan -var-file prod.tfvars
+```
+
+Apply Terraform
+```shell
+terraform apply -var-file prod.tfvars  
+```
+<!-- BEGIN_TF_DOCS -->
 ## Requirements
 
 | Name | Version |
@@ -150,7 +287,7 @@ No modules.
 | <a name="output_lambda_role_arn"></a> [lambda\_role\_arn](#output\_lambda\_role\_arn) | The Amazon Resource Name (ARN) specifying the Lambda IAM role |
 | <a name="output_lambda_role_name"></a> [lambda\_role\_name](#output\_lambda\_role\_name) | The name of the Lambda IAM role |
 | <a name="output_lambda_role_unique_id"></a> [lambda\_role\_unique\_id](#output\_lambda\_role\_unique\_id) | The stable and unique string identifying the Lambda IAM role |
-<!-- END OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
+<!-- END_TF_DOCS -->
 
 ## Versioning  
 This project uses a `.version` file at the root of the repo which the pipeline reads from and does a git tag.  

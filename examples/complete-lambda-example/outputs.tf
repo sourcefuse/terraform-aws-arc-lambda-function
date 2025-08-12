@@ -125,34 +125,3 @@ output "ssm_parameter_names" {
   description = "Names of the created SSM parameters"
   value       = [for param in aws_ssm_parameter.lambda_config : param.name]
 }
-
-# =============================================================================
-# TESTING COMMANDS
-# =============================================================================
-
-
-output "monitoring_commands" {
-  description = "Commands for monitoring the Lambda function"
-  value = {
-    # CloudWatch logs
-    view_logs           = "aws logs tail /aws/lambda/${module.complete_lambda.lambda_function_name} --follow"
-    view_logs_last_hour = "aws logs filter-log-events --log-group-name /aws/lambda/${module.complete_lambda.lambda_function_name} --start-time $(date -d '1 hour ago' +%s)000"
-
-    # Lambda metrics
-    get_invocation_metrics = "aws cloudwatch get-metric-statistics --namespace AWS/Lambda --metric-name Invocations --dimensions Name=FunctionName,Value=${module.complete_lambda.lambda_function_name} --start-time $(date -u -d '1 hour ago' +%Y-%m-%dT%H:%M:%S) --end-time $(date -u +%Y-%m-%dT%H:%M:%S) --period 300 --statistics Sum"
-    get_error_metrics      = "aws cloudwatch get-metric-statistics --namespace AWS/Lambda --metric-name Errors --dimensions Name=FunctionName,Value=${module.complete_lambda.lambda_function_name} --start-time $(date -u -d '1 hour ago' +%Y-%m-%dT%H:%M:%S) --end-time $(date -u +%Y-%m-%dT%H:%M:%S) --period 300 --statistics Sum"
-    get_duration_metrics   = "aws cloudwatch get-metric-statistics --namespace AWS/Lambda --metric-name Duration --dimensions Name=FunctionName,Value=${module.complete_lambda.lambda_function_name} --start-time $(date -u -d '1 hour ago' +%Y-%m-%dT%H:%M:%S) --end-time $(date -u +%Y-%m-%dT%H:%M:%S) --period 300 --statistics Average,Maximum"
-
-    # Provisioned concurrency metrics
-    get_provisioned_concurrency_metrics = "aws cloudwatch get-metric-statistics --namespace AWS/Lambda --metric-name ProvisionedConcurrencyUtilization --dimensions Name=FunctionName,Value=${module.complete_lambda.lambda_function_name} Name=Resource,Value=${module.complete_lambda.lambda_function_name}:${var.alias_name} --start-time $(date -u -d '1 hour ago' +%Y-%m-%dT%H:%M:%S) --end-time $(date -u +%Y-%m-%dT%H:%M:%S) --period 300 --statistics Average,Maximum"
-
-    # DLQ monitoring
-    check_dlq_messages   = "aws sqs get-queue-attributes --queue-url ${module.complete_lambda.lambda_dead_letter_queue_url} --attribute-names ApproximateNumberOfMessages"
-    receive_dlq_messages = "aws sqs receive-message --queue-url ${module.complete_lambda.lambda_dead_letter_queue_url} --max-number-of-messages 10"
-
-    # Function configuration
-    get_function_config        = "aws lambda get-function --function-name ${module.complete_lambda.lambda_function_name}"
-    get_alias_config           = "aws lambda get-alias --function-name ${module.complete_lambda.lambda_function_name} --name ${var.alias_name}"
-    list_event_source_mappings = "aws lambda list-event-source-mappings --function-name ${module.complete_lambda.lambda_function_name}"
-  }
-}

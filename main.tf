@@ -5,10 +5,6 @@
 data "aws_caller_identity" "current" {}
 data "aws_region" "current" {}
 
-# =============================================================================
-# VALIDATION CHECKS
-# =============================================================================
-
 # Validate deployment package configuration
 resource "null_resource" "validate_deployment_package" {
   provisioner "local-exec" {

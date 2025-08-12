@@ -29,6 +29,18 @@ data "archive_file" "lambda_zip" {
   }
 }
 
+module "tags" {
+  source  = "sourcefuse/arc-tags/aws"
+  version = "1.2.6"
+
+  environment = terraform.workspace
+  project     = "terraform-aws-arc-lambda"
+
+  extra_tags = {
+    Example = "True"
+  }
+}
+
 module "basic_lambda" {
   source = "../../"
 
@@ -54,11 +66,5 @@ module "basic_lambda" {
   create_log_group      = true
   log_retention_in_days = 7
 
-  # Tags
-  tags = {
-    Environment = var.environment
-    Project     = "lambda-terraform-module"
-    Example     = "basic-lambda"
-    ManagedBy   = "terraform"
-  }
+  tags = module.tags.tags
 }
