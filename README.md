@@ -10,7 +10,7 @@
 
 ## Overview
 
-The ARC Terraform-aws-arc-lambda module provides a comprehensive and unified solution for deploying AWS Lambda serverless computing infrastructure on AWS. This versatile module supports multiple deployment methods including local source code, S3-based deployments, and container images, allowing you to choose the deployment approach that best fits your application requirements and operational needs.
+The ARC Terraform module provides a comprehensive and unified solution for deploying AWS Lambda functions on AWS. This versatile module supports multiple deployment methods including local source code, S3-based deployments, and container images, allowing you to choose the deployment approach that best fits your application requirements and operational needs.
 
 ### Prerequisites
 Before using this module, ensure you have the following:
