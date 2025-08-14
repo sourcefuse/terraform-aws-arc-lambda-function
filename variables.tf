@@ -274,55 +274,17 @@ variable "dlq_message_retention_seconds" {
 # IAM CONFIGURATION
 # =============================================================================
 
-variable "role" {
-  description = "IAM role ARN attached to the Lambda Function. If not provided, a role will be created"
+
+variable "role_arn" {
+  description = "Existing IAM role ARN to use. If null, a default role will be created."
   type        = string
   default     = null
 }
 
-variable "create_role" {
-  description = "Whether to create an IAM role for the Lambda function"
-  type        = bool
-  default     = true
-}
-
-variable "role_name" {
-  description = "Name of the IAM role to create (if create_role is true)"
-  type        = string
-  default     = null
-}
-
-variable "role_path" {
-  description = "Path of the IAM role"
-  type        = string
-  default     = "/"
-}
-
-variable "role_permissions_boundary" {
-  description = "The ARN of the policy that is used to set the permissions boundary for the role"
-  type        = string
-  default     = null
-}
-
-variable "attach_policy_statements" {
-  description = "Whether to attach additional policy statements to the Lambda role"
-  type        = bool
-  default     = false
-}
-
-variable "policy_statements" {
-  description = "Map of policy statements to attach to the Lambda role"
-  type = map(object({
-    effect    = string
-    actions   = list(string)
-    resources = list(string)
-    conditions = optional(map(object({
-      test     = string
-      variable = string
-      values   = list(string)
-    })), {})
-  }))
-  default = {}
+variable "additional_policy_arns" {
+  description = "List of additional IAM policy ARNs to attach to the Lambda role"
+  type        = list(string)
+  default     = []
 }
 
 # =============================================================================
@@ -485,12 +447,6 @@ variable "function_url_config" {
 
 variable "tags" {
   description = "A map of tags to assign to the resource"
-  type        = map(string)
-  default     = {}
-}
-
-variable "function_tags" {
-  description = "A map of tags to assign specifically to the Lambda function"
   type        = map(string)
   default     = {}
 }

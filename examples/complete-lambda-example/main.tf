@@ -388,82 +388,16 @@ module "complete_lambda" {
   }
 
   # Comprehensive IAM permissions
-  create_role              = true
-  attach_policy_statements = true
-  policy_statements = {
-    s3_access = {
-      effect = "Allow"
-      actions = [
-        "s3:GetObject",
-        "s3:GetObjectVersion",
-        "s3:PutObject",
-        "s3:DeleteObject",
-        "s3:ListBucket"
-      ]
-      resources = [
-        aws_s3_bucket.event_source.arn,
-        "${aws_s3_bucket.event_source.arn}/*"
-      ]
-    }
-    sns_publish = {
-      effect = "Allow"
-      actions = [
-        "sns:Publish",
-        "sns:GetTopicAttributes"
-      ]
-      resources = [
-        aws_sns_topic.lambda_notifications.arn
-      ]
-    }
-    sqs_access = {
-      effect = "Allow"
-      actions = [
-        "sqs:SendMessage",
-        "sqs:ReceiveMessage",
-        "sqs:DeleteMessage",
-        "sqs:GetQueueAttributes"
-      ]
-      resources = [
-        aws_sqs_queue.lambda_queue.arn
-      ]
-    }
-    rds_access = {
-      effect = "Allow"
-      actions = [
-        "rds:DescribeDBInstances",
-        "rds:DescribeDBClusters"
-      ]
-      resources = ["*"]
-    }
-    ssm_access = {
-      effect = "Allow"
-      actions = [
-        "ssm:GetParameter",
-        "ssm:GetParameters",
-        "ssm:GetParametersByPath"
-      ]
-      resources = [
-        "arn:aws:ssm:${data.aws_region.current.id}:${data.aws_caller_identity.current.account_id}:parameter/${var.function_name}/*"
-      ]
-    }
-    kms_access = {
-      effect = "Allow"
-      actions = [
-        "kms:Decrypt",
-        "kms:DescribeKey"
-      ]
-      resources = [
-        aws_kms_key.lambda_key.arn
-      ]
-    }
-    cloudwatch_metrics = {
-      effect = "Allow"
-      actions = [
-        "cloudwatch:PutMetricData"
-      ]
-      resources = ["*"]
-    }
-  }
+  additional_policy_arns = [
+    "arn:aws:iam::aws:policy/AmazonS3FullAccess",
+    "arn:aws:iam::aws:policy/AmazonSNSFullAccess",
+    "arn:aws:iam::aws:policy/AmazonSQSFullAccess",
+    "arn:aws:iam::aws:policy/AmazonRDSReadOnlyAccess",
+    "arn:aws:iam::aws:policy/AmazonSSMReadOnlyAccess",
+    "arn:aws:iam::aws:policy/CloudWatchFullAccess",
+    "arn:aws:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole"
+  ]
+
 
   # Function URL with CORS
   create_function_url = var.enable_function_url

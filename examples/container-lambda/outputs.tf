@@ -13,11 +13,6 @@ output "version" {
   value       = module.container_lambda.lambda_function_version
 }
 
-output "role_arn" {
-  description = "ARN of the Lambda execution role"
-  value       = module.container_lambda.lambda_role_arn
-}
-
 output "ecr_repository_url" {
   description = "URL of the ECR repository"
   value       = aws_ecr_repository.lambda_container.repository_url

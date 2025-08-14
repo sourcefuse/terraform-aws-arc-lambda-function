@@ -1,41 +1,14 @@
 # =============================================================================
 # DATA SOURCES
 # =============================================================================
-
-data "aws_caller_identity" "current" {}
 data "aws_region" "current" {}
 
-# Validate deployment package configuration
-resource "null_resource" "validate_deployment_package" {
-  provisioner "local-exec" {
-    command = <<EOT
-      if [ "${local.deployment_methods_count}" -ne 1 ]; then
-        echo 'Error: Exactly one of filename, s3_bucket+s3_key, or image_uri must be specified'
-        exit 1
-      fi
-    EOT
-  }
-}
-
-resource "null_resource" "validate_package_compatibility" {
-  provisioner "local-exec" {
-    command = <<EOT
-      if { [ "${local.is_zip_package}" = true ] && [ "${local.has_image_uri}" = true ]; } ||
-         { [ "${local.is_image_package}" = true ] && { [ "${local.has_filename}" = true ] || [ "${local.has_s3_package}" = true ]; } }; then
-        echo 'Error: Package type and deployment method are incompatible'
-        exit 1
-      fi
-    EOT
-  }
-}
 
 # =============================================================================
 # IAM ROLE FOR LAMBDA FUNCTION
 # =============================================================================
 
-data "aws_iam_policy_document" "lambda_assume_role" {
-  count = local.create_new_role ? 1 : 0
-
+data "aws_iam_policy_document" "assume_role" {
   statement {
     effect = "Allow"
 
@@ -48,50 +21,24 @@ data "aws_iam_policy_document" "lambda_assume_role" {
   }
 }
 
-resource "aws_iam_role" "lambda" {
-  count = local.create_new_role ? 1 : 0
-
-  name                 = local.role_name
-  path                 = var.role_path
-  assume_role_policy   = data.aws_iam_policy_document.lambda_assume_role[0].json
-  permissions_boundary = var.role_permissions_boundary
-
-  tags = local.common_tags
+resource "aws_iam_role" "default" {
+  count              = var.role_arn == null ? 1 : 0
+  name               = "${var.function_name}_execution_role"
+  assume_role_policy = data.aws_iam_policy_document.assume_role.json
 }
 
-# Create inline policy for Lambda execution role
-data "aws_iam_policy_document" "lambda_execution" {
-  count = local.create_new_role ? 1 : 0
-
-  dynamic "statement" {
-    for_each = local.all_policy_statements
-
-    content {
-      effect    = statement.value.effect
-      actions   = statement.value.actions
-      resources = statement.value.resources
-
-      dynamic "condition" {
-        for_each = try(statement.value.conditions, [])
-        content {
-          test     = condition.value.test
-          variable = condition.value.variable
-          values   = condition.value.values
-        }
-      }
-    }
-  }
+# Attach AWS basic execution policy if creating default role
+resource "aws_iam_role_policy_attachment" "basic_execution" {
+  count      = var.role_arn == null ? 1 : 0
+  role       = aws_iam_role.default[0].name
+  policy_arn = "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
 }
-
-
-resource "aws_iam_role_policy" "lambda_execution" {
-  count = local.create_new_role ? 1 : 0
-
-  name   = "${local.role_name}-execution-policy"
-  role   = aws_iam_role.lambda[0].id
-  policy = data.aws_iam_policy_document.lambda_execution[0].json
+# Attach additional user-provided policies to default role
+resource "aws_iam_role_policy_attachment" "additional" {
+  count      = var.role_arn == null ? length(var.additional_policy_arns) : 0
+  role       = aws_iam_role.default[0].name
+  policy_arn = var.additional_policy_arns[count.index]
 }
-
 # =============================================================================
 # CLOUDWATCH LOG GROUP
 # =============================================================================
@@ -103,9 +50,8 @@ resource "aws_cloudwatch_log_group" "lambda" {
   retention_in_days = var.log_retention_in_days
   kms_key_id        = var.log_group_kms_key_id
 
-  tags = local.common_tags
+  tags = var.tags
 
-  depends_on = [aws_iam_role_policy.lambda_execution]
 }
 
 # =============================================================================
@@ -118,7 +64,7 @@ resource "aws_sqs_queue" "dlq" {
   name                      = local.dlq_name
   message_retention_seconds = var.dlq_message_retention_seconds
 
-  tags = local.common_tags
+  tags = var.tags
 }
 
 # =============================================================================
@@ -128,7 +74,7 @@ resource "aws_sqs_queue" "dlq" {
 resource "aws_lambda_function" "this" {
   function_name = local.function_name
   description   = var.description
-  role          = local.lambda_role_arn
+  role          = var.role_arn != null ? var.role_arn : aws_iam_role.default[0].arn
   handler       = local.handler
   runtime       = local.runtime
 
@@ -229,7 +175,7 @@ resource "aws_lambda_function" "this" {
   # Lambda Insights layer
   layers = local.lambda_insights_layer
 
-  tags = local.function_tags
+  tags = var.tags
 
   lifecycle {
     ignore_changes = [
@@ -238,10 +184,7 @@ resource "aws_lambda_function" "this" {
   }
 
   depends_on = [
-    null_resource.validate_deployment_package,
-    null_resource.validate_package_compatibility,
     aws_cloudwatch_log_group.lambda,
-    aws_iam_role_policy.lambda_execution,
   ]
 }
 

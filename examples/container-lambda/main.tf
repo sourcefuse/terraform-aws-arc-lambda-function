@@ -28,10 +28,6 @@ module "tags" {
   }
 }
 
-# Get current AWS account ID and region
-data "aws_caller_identity" "current" {}
-data "aws_region" "current" {}
-
 # Create ECR repository for Lambda container images
 resource "aws_ecr_repository" "lambda_container" {
   name                 = var.ecr_repository_name
@@ -146,30 +142,10 @@ module "container_lambda" {
     APP_VERSION = var.image_tag
   }
   # IAM permissions for additional AWS services
-  create_role              = true
-  attach_policy_statements = true
-  policy_statements = {
-    ecr_access = {
-      effect = "Allow"
-      actions = [
-        "ecr:GetAuthorizationToken",
-        "ecr:BatchCheckLayerAvailability",
-        "ecr:GetDownloadUrlForLayer",
-        "ecr:BatchGetImage"
-      ]
-      resources = ["*"]
-    }
-    ssm_access = {
-      effect = "Allow"
-      actions = [
-        "ssm:GetParameter",
-        "ssm:GetParameters"
-      ]
-      resources = [
-        "arn:aws:ssm:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:parameter/${var.function_name}/*"
-      ]
-    }
-  }
+  additional_policy_arns = [
+    "arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryFullAccess"
+  ]
+
 
   # CloudWatch Logs
   create_log_group      = true

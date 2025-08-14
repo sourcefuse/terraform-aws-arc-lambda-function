@@ -194,56 +194,10 @@ module "s3_advanced_lambda" {
   }
 
   # IAM permissions for comprehensive S3 access
-  create_role              = true
-  attach_policy_statements = true
-  policy_statements = {
-    s3_source_read = {
-      effect = "Allow"
-      actions = [
-        "s3:GetObject",
-        "s3:GetObjectVersion",
-        "s3:GetObjectTagging"
-      ]
-      resources = [
-        "${aws_s3_bucket.source_bucket.arn}/*"
-      ]
-    }
-    s3_destination_write = {
-      effect = "Allow"
-      actions = [
-        "s3:PutObject",
-        "s3:PutObjectAcl",
-        "s3:PutObjectTagging",
-        "s3:DeleteObject"
-      ]
-      resources = [
-        "${aws_s3_bucket.destination_bucket.arn}/*"
-      ]
-    }
-    s3_bucket_operations = {
-      effect = "Allow"
-      actions = [
-        "s3:ListBucket",
-        "s3:GetBucketLocation",
-        "s3:GetBucketVersioning"
-      ]
-      resources = [
-        aws_s3_bucket.source_bucket.arn,
-        aws_s3_bucket.destination_bucket.arn,
-        aws_s3_bucket.lambda_deployments.arn
-      ]
-    }
-    s3_deployment_read = {
-      effect = "Allow"
-      actions = [
-        "s3:GetObject",
-        "s3:GetObjectVersion"
-      ]
-      resources = [
-        "${aws_s3_bucket.lambda_deployments.arn}/*"
-      ]
-    }
-  }
+  additional_policy_arns = [
+    "arn:aws:iam::aws:policy/AmazonS3ReadOnlyAccess",
+    "arn:aws:iam::aws:policy/AmazonSQSFullAccess"
+  ]
 
   # CloudWatch Logs
   create_log_group      = true

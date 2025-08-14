@@ -32,11 +32,6 @@ output "lambda_function_kms_key_arn" {
   value       = aws_lambda_function.this.kms_key_arn
 }
 
-output "lambda_function_source_code_hash" {
-  description = "Base64-encoded representation of raw SHA-256 sum of the zip file"
-  value       = aws_lambda_function.this.source_code_hash
-}
-
 output "lambda_function_source_code_size" {
   description = "The size in bytes of the function .zip file"
   value       = aws_lambda_function.this.source_code_size
@@ -57,25 +52,10 @@ output "lambda_function_signing_profile_version_arn" {
   value       = aws_lambda_function.this.signing_profile_version_arn
 }
 
-# =============================================================================
-# IAM ROLE OUTPUTS
-# =============================================================================
-
 output "lambda_role_arn" {
-  description = "The Amazon Resource Name (ARN) specifying the Lambda IAM role"
-  value       = local.lambda_role_arn
+  description = "ARN of the IAM role used by the Lambda function. If an existing role ARN is provided via var.role_arn, it is used; otherwise, the default role created in this module is returned."
+  value       = var.role_arn != null ? var.role_arn : aws_iam_role.default[0].arn
 }
-
-output "lambda_role_name" {
-  description = "The name of the Lambda IAM role"
-  value       = local.create_new_role ? aws_iam_role.lambda[0].name : null
-}
-
-output "lambda_role_unique_id" {
-  description = "The stable and unique string identifying the Lambda IAM role"
-  value       = local.create_new_role ? aws_iam_role.lambda[0].unique_id : null
-}
-
 # =============================================================================
 # CLOUDWATCH LOG GROUP OUTPUTS
 # =============================================================================
@@ -178,9 +158,4 @@ output "lambda_function_vpc_config" {
     security_group_ids = var.vpc_config.security_group_ids
     vpc_id             = aws_lambda_function.this.vpc_config[0].vpc_id
   } : null
-}
-
-output "lambda_function_tags" {
-  description = "The Lambda function tags"
-  value       = local.function_tags
 }
