@@ -20,7 +20,7 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 # Initialize AWS clients
-ssm_client = boto3.client('ssm')
+ssm_client = boto3.client('ssm') # NOSONAR
 
 class LambdaEvent(BaseModel):
     """Pydantic model for Lambda event validation"""

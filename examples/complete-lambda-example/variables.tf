@@ -25,6 +25,11 @@ variable "function_version" {
   default     = "1.0.0"
 }
 
+variable "acl" {
+  type        = string
+  description = "ACL value"
+}
+
 variable "environment" {
   description = "Environment name"
   type        = string

@@ -12,7 +12,7 @@ timeout     = 60   # Longer timeout for complex operations
 
 # S3 Configuration (MUST be globally unique)
 s3_bucket_name = "complete-lambda-example-bucket-12345" # Change this to a unique name
-
+acl            = "private"
 # Dead Letter Queue Configuration
 dlq_retention_seconds = 1209600 # 14 days
 

@@ -88,42 +88,49 @@ module "rds" {
 # S3 BUCKET FOR EVENT SOURCE
 # =============================================================================
 
-resource "aws_s3_bucket" "event_source" {
-  bucket = var.s3_bucket_name
+# resource "aws_s3_bucket" "event_source" {
+#   bucket = var.s3_bucket_name
 
-  tags = {
-    Environment = var.environment
-    Project     = "lambda-terraform-module"
-    Purpose     = "lambda-event-source"
-  }
+#   tags = {
+#     Environment = var.environment
+#     Project     = "lambda-terraform-module"
+#     Purpose     = "lambda-event-source"
+#   }
+# }
+
+# resource "aws_s3_bucket_versioning" "event_source" {
+#   bucket = aws_s3_bucket.event_source.id
+#   versioning_configuration {
+#     status = "Enabled"
+#   }
+# }
+
+# resource "aws_s3_bucket_server_side_encryption_configuration" "event_source" {
+#   bucket = aws_s3_bucket.event_source.id
+
+#   rule {
+#     apply_server_side_encryption_by_default {
+#       sse_algorithm = "AES256"
+#     }
+#   }
+# }
+
+# resource "aws_s3_bucket_public_access_block" "event_source" {
+#   bucket = aws_s3_bucket.event_source.id
+
+#   block_public_acls       = true
+#   block_public_policy     = true
+#   ignore_public_acls      = true
+#   restrict_public_buckets = true
+# }
+module "s3" {
+  source  = "sourcefuse/arc-s3/aws"
+  version = "0.0.4"
+
+  name = var.s3_bucket_name
+  acl  = var.acl
+  tags = module.tags.tags
 }
-
-resource "aws_s3_bucket_versioning" "event_source" {
-  bucket = aws_s3_bucket.event_source.id
-  versioning_configuration {
-    status = "Enabled"
-  }
-}
-
-resource "aws_s3_bucket_server_side_encryption_configuration" "event_source" {
-  bucket = aws_s3_bucket.event_source.id
-
-  rule {
-    apply_server_side_encryption_by_default {
-      sse_algorithm = "AES256"
-    }
-  }
-}
-
-resource "aws_s3_bucket_public_access_block" "event_source" {
-  bucket = aws_s3_bucket.event_source.id
-
-  block_public_acls       = true
-  block_public_policy     = true
-  ignore_public_acls      = true
-  restrict_public_buckets = true
-}
-
 # =============================================================================
 # SNS TOPIC FOR NOTIFICATIONS
 # =============================================================================
@@ -214,9 +221,10 @@ resource "aws_api_gateway_deployment" "lambda_deployment" {
 }
 
 resource "aws_api_gateway_stage" "lambda_stage" {
-  deployment_id = aws_api_gateway_deployment.lambda_deployment.id
-  rest_api_id   = aws_api_gateway_rest_api.lambda_api.id
-  stage_name    = var.api_stage_name
+  deployment_id        = aws_api_gateway_deployment.lambda_deployment.id
+  rest_api_id          = aws_api_gateway_rest_api.lambda_api.id
+  stage_name           = var.api_stage_name
+  xray_tracing_enabled = false # Sensitive
 
   tags = {
     Environment = var.environment
@@ -298,7 +306,7 @@ data "archive_file" "lambda_zip" {
   output_path = "lambda_function.zip"
   source {
     content = templatefile("${path.module}/lambda_function.py", {
-      s3_bucket_name = aws_s3_bucket.event_source.bucket
+      s3_bucket_name = module.s3.bucket_id
       sns_topic_arn  = aws_sns_topic.lambda_notifications.arn
       sqs_queue_url  = aws_sqs_queue.lambda_queue.url
       db_endpoint    = module.rds.endpoint
@@ -335,7 +343,7 @@ module "complete_lambda" {
   environment_variables = {
     ENVIRONMENT      = var.environment
     LOG_LEVEL        = var.log_level
-    S3_BUCKET_NAME   = aws_s3_bucket.event_source.bucket
+    S3_BUCKET_NAME   = module.s3.bucket_id
     SNS_TOPIC_ARN    = aws_sns_topic.lambda_notifications.arn
     SQS_QUEUE_URL    = aws_sqs_queue.lambda_queue.url
     DB_ENDPOINT      = module.rds.endpoint
@@ -373,7 +381,7 @@ module "complete_lambda" {
     s3_trigger = {
       action     = "lambda:InvokeFunction"
       principal  = "s3.amazonaws.com"
-      source_arn = aws_s3_bucket.event_source.arn
+      source_arn = module.s3.bucket_arn
     }
     sns_trigger = {
       action     = "lambda:InvokeFunction"
@@ -431,7 +439,7 @@ module "complete_lambda" {
 
 # S3 bucket notification
 resource "aws_s3_bucket_notification" "lambda_notification" {
-  bucket = aws_s3_bucket.event_source.id
+  bucket = module.s3.bucket_id
 
   lambda_function {
     lambda_function_arn = module.complete_lambda.lambda_function_arn

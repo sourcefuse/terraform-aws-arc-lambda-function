@@ -45,13 +45,13 @@ output "url" {
 
 output "s3_bucket_name" {
   description = "Name of the S3 bucket for event source"
-  value       = aws_s3_bucket.event_source.bucket
+  value       = module.s3.bucket_id
 }
 
-output "s3_bucket_arn" {
-  description = "ARN of the S3 bucket for event source"
-  value       = aws_s3_bucket.event_source.arn
-}
+# output "s3_bucket_arn" {
+#   description = "ARN of the S3 bucket for event source"
+#   value       = aws_s3_bucket.event_source.arn
+# }
 
 output "sns_topic_arn" {
   description = "ARN of the SNS topic"
