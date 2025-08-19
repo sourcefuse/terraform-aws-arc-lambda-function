@@ -101,7 +101,8 @@ module "s3" {
 # =============================================================================
 
 resource "aws_sns_topic" "lambda_notifications" {
-  name = "${var.function_name}-notifications"
+  name              = "${var.function_name}-notifications"
+  kms_master_key_id = data.aws_kms_key.sns.arn
 
   tags = {
     Environment = var.environment
@@ -189,7 +190,7 @@ resource "aws_api_gateway_stage" "lambda_stage" {
   deployment_id        = aws_api_gateway_deployment.lambda_deployment.id
   rest_api_id          = aws_api_gateway_rest_api.lambda_api.id
   stage_name           = var.api_stage_name
-  xray_tracing_enabled = false # Sensitive
+  xray_tracing_enabled = true
 
   tags = {
     Environment = var.environment

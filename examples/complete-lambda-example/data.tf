@@ -27,3 +27,6 @@ data "aws_subnets" "private" {
     values = ["*private*"]
   }
 }
+data "aws_kms_key" "sns" {
+  key_id = "alias/aws/sns"
+}
