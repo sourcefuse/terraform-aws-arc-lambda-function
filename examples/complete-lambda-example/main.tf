@@ -171,7 +171,7 @@ resource "aws_api_gateway_integration" "lambda_integration" {
 
   integration_http_method = "POST"
   type                    = "AWS_PROXY"
-  uri                     = module.complete_lambda.lambda_function_invoke_arn
+  uri                     = module.complete_lambda.invoke_arn
 }
 
 resource "aws_api_gateway_deployment" "lambda_deployment" {
@@ -216,7 +216,7 @@ resource "aws_cloudwatch_event_rule" "lambda_schedule" {
 resource "aws_cloudwatch_event_target" "lambda_target" {
   rule      = aws_cloudwatch_event_rule.lambda_schedule.name
   target_id = "LambdaTarget"
-  arn       = module.complete_lambda.lambda_alias_arn != null ? module.complete_lambda.lambda_alias_arn : module.complete_lambda.lambda_function_arn
+  arn       = module.complete_lambda.alias_arn != null ? module.complete_lambda.alias_arn : module.complete_lambda.arn
 
   input = jsonencode({
     source      = "eventbridge"
@@ -408,7 +408,7 @@ resource "aws_s3_bucket_notification" "lambda_notification" {
   bucket = module.s3.bucket_id
 
   lambda_function {
-    lambda_function_arn = module.complete_lambda.lambda_function_arn
+    lambda_function_arn = module.complete_lambda.arn
     events              = ["s3:ObjectCreated:*", "s3:ObjectRemoved:*"]
     filter_prefix       = "uploads/"
     filter_suffix       = ".json"
@@ -421,7 +421,7 @@ resource "aws_s3_bucket_notification" "lambda_notification" {
 resource "aws_sns_topic_subscription" "lambda_subscription" {
   topic_arn = aws_sns_topic.lambda_notifications.arn
   protocol  = "lambda"
-  endpoint  = module.complete_lambda.lambda_function_arn
+  endpoint  = module.complete_lambda.arn
 
   depends_on = [module.complete_lambda]
 }
@@ -429,7 +429,7 @@ resource "aws_sns_topic_subscription" "lambda_subscription" {
 # SQS event source mapping
 resource "aws_lambda_event_source_mapping" "sqs_trigger" {
   event_source_arn = aws_sqs_queue.lambda_queue.arn
-  function_name    = module.complete_lambda.lambda_function_name
+  function_name    = module.complete_lambda.name
   batch_size       = 10
   enabled          = true
 
@@ -454,7 +454,7 @@ resource "aws_cloudwatch_metric_alarm" "lambda_errors" {
   alarm_actions       = [aws_sns_topic.lambda_notifications.arn]
 
   dimensions = {
-    FunctionName = module.complete_lambda.lambda_function_name
+    FunctionName = module.complete_lambda.name
   }
 
   tags = {
@@ -476,7 +476,7 @@ resource "aws_cloudwatch_metric_alarm" "lambda_duration" {
   alarm_actions       = [aws_sns_topic.lambda_notifications.arn]
 
   dimensions = {
-    FunctionName = module.complete_lambda.lambda_function_name
+    FunctionName = module.complete_lambda.name
   }
 
   tags = {
@@ -498,7 +498,7 @@ resource "aws_cloudwatch_metric_alarm" "dlq_messages" {
   alarm_actions       = [aws_sns_topic.lambda_notifications.arn]
 
   dimensions = {
-    QueueName = module.complete_lambda.lambda_dead_letter_queue_name
+    QueueName = module.complete_lambda.dead_letter_queue_name
   }
 
   tags = {
@@ -565,7 +565,7 @@ resource "aws_cloudwatch_dashboard" "complete_lambda_dashboard" {
 
         properties = {
           metrics = [
-            ["AWS/SQS", "ApproximateNumberOfVisibleMessages", "QueueName", module.complete_lambda.lambda_dead_letter_queue_name]
+            ["AWS/SQS", "ApproximateNumberOfVisibleMessages", "QueueName", module.complete_lambda.dead_letter_queue_name]
           ]
           view    = "timeSeries"
           stacked = false
