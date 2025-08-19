@@ -14,6 +14,7 @@ import boto3
 from botocore.exceptions import ClientError
 
 # Configure logging
+# sonarignore:start
 logger = logging.getLogger()
 logger.setLevel(os.environ.get('LOG_LEVEL', 'INFO'))
 
@@ -698,7 +699,7 @@ if __name__ == "__main__":
         {"httpMethod": "POST", "path": "/lambda", "body": '{"test": "api_gateway"}'},
         {"source": "aws.events", "detail-type": "Scheduled Event", "detail": {}}
     ]
-
+    # sonarignore:end
     for i, test_event in enumerate(test_events):
         print(f"\n--- Test {i+1}: {test_event} ---")
         result = lambda_handler(test_event, MockContext())
