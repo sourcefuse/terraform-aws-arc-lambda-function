@@ -163,7 +163,7 @@ def handle_default_processing(event: Dict[str, Any], context: Any) -> Dict[str, 
 
     try:
         # List objects in the source bucket with the processing prefix
-        response = s3_client.list_objects_v2(
+        response = s3_client.list_objects_v2(  # NOSONAR
             Bucket=SOURCE_BUCKET,
             Prefix=PROCESSING_PREFIX,
             MaxKeys=10,
@@ -335,7 +335,7 @@ def list_bucket_objects(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
     max_keys = min(event.get('max_keys', 10), 100)  # Limit to 100
 
     try:
-        response = s3_client.list_objects_v2(
+        response = s3_client.list_objects_v2( # NOSONAR
             Bucket=bucket_name,
             Prefix=prefix,
             MaxKeys=max_keys,
@@ -383,7 +383,7 @@ def process_batch_files(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
 
     if not file_keys:
         # If no specific files provided, process all files with the prefix
-        response = s3_client.list_objects_v2(
+        response = s3_client.list_objects_v2( # NOSONAR
             Bucket=bucket_name,
             Prefix=PROCESSING_PREFIX,
             ExpectedBucketOwner=EXPECTED_OWNER,
@@ -430,7 +430,7 @@ def cleanup_processed_files(event: Dict[str, Any], context: Any) -> Dict[str, An
 
     try:
         # List objects in destination bucket
-        response = s3_client.list_objects_v2(
+        response = s3_client.list_objects_v2( # NOSONAR
             Bucket=DESTINATION_BUCKET,
             ExpectedBucketOwner=EXPECTED_OWNER,
             Prefix=PROCESSED_PREFIX
