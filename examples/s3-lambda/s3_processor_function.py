@@ -15,7 +15,8 @@ logger = logging.getLogger(__name__)
 
 # Initialize AWS clients
 s3_client = boto3.client('s3') # NOSONAR
-
+APPLICATION_JSON = "application/json"
+PROCESSED_PREFIX = "processed/"
 # Environment variables
 SOURCE_BUCKET = os.environ.get('SOURCE_BUCKET', '${source_bucket}')
 DESTINATION_BUCKET = os.environ.get('DESTINATION_BUCKET', '${destination_bucket}')
@@ -60,7 +61,7 @@ def lambda_handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
         return {
             'statusCode': 500,
             'headers': {
-                'Content-Type': 'application/json',
+                'Content-Type': APPLICATION_JSON,
                 'Access-Control-Allow-Origin': "ACCESS_CONTROL_ALLOW_ORIGIN"
             },
             'body': json.dumps({
@@ -105,7 +106,7 @@ def handle_s3_event(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
     return {
         'statusCode': 200 if not errors else 207,  # 207 for partial success
         'headers': {
-            'Content-Type': 'application/json',
+            'Content-Type': APPLICATION_JSON,
             'Access-Control-Allow-Origin': "ACCESS_CONTROL_ALLOW_ORIGIN"
         },
         'body': json.dumps({
@@ -142,7 +143,7 @@ def handle_manual_action(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
         return {
             'statusCode': 400,
             'headers': {
-                'Content-Type': 'application/json',
+                'Content-Type': APPLICATION_JSON,
                 'Access-Control-Allow-Origin': "ACCESS_CONTROL_ALLOW_ORIGIN"
             },
             'body': json.dumps({
@@ -182,7 +183,7 @@ def handle_default_processing(event: Dict[str, Any], context: Any) -> Dict[str, 
         return {
             'statusCode': 200,
             'headers': {
-                'Content-Type': 'application/json',
+                'Content-Type': APPLICATION_JSON,
                 'Access-Control-Allow-Origin': "ACCESS_CONTROL_ALLOW_ORIGIN"
             },
             'body': json.dumps({
@@ -229,8 +230,8 @@ def process_uploaded_file(bucket_name: str, object_key: str) -> Dict[str, Any]:
         processed_content_bytes = content
 
     # Generate destination key
-    destination_key = object_key.replace(PROCESSING_PREFIX, 'processed/')  # Noncompliant - "processed" is duplicated 5 times
-    if not destination_key.startswith('processed/'):
+    destination_key = object_key.replace(PROCESSING_PREFIX, PROCESSED_PREFIX)
+    if not destination_key.startswith(PROCESSED_PREFIX):
         destination_key = f"processed/{destination_key}"
 
     # Upload processed file to destination bucket
@@ -268,8 +269,8 @@ def handle_file_deletion(bucket_name: str, object_key: str) -> Dict[str, Any]:
     logger.info(f"Handling deletion of: {bucket_name}/{object_key}")
 
     # Optionally clean up corresponding processed file
-    destination_key = object_key.replace(PROCESSING_PREFIX, 'processed/')
-    if not destination_key.startswith('processed/'):
+    destination_key = object_key.replace(PROCESSING_PREFIX, PROCESSED_PREFIX)
+    if not destination_key.startswith(PROCESSED_PREFIX):
         destination_key = f"processed/{destination_key}"
 
     try:
@@ -304,7 +305,7 @@ def list_all_buckets(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
         return {
             'statusCode': 200,
             'headers': {
-                'Content-Type': 'application/json',
+                'Content-Type': APPLICATION_JSON,
                 'Access-Control-Allow-Origin': "ACCESS_CONTROL_ALLOW_ORIGIN"
             },
             'body': json.dumps({
@@ -354,7 +355,7 @@ def list_bucket_objects(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
         return {
             'statusCode': 200,
             'headers': {
-                'Content-Type': 'application/json',
+                'Content-Type': APPLICATION_JSON,
                 'Access-Control-Allow-Origin': "ACCESS_CONTROL_ALLOW_ORIGIN"
             },
             'body': json.dumps({
@@ -405,7 +406,7 @@ def process_batch_files(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
     return {
         'statusCode': 200 if not errors else 207,
         'headers': {
-            'Content-Type': 'application/json',
+            'Content-Type': APPLICATION_JSON,
             'Access-Control-Allow-Origin': "ACCESS_CONTROL_ALLOW_ORIGIN"
         },
         'body': json.dumps({
@@ -432,7 +433,7 @@ def cleanup_processed_files(event: Dict[str, Any], context: Any) -> Dict[str, An
         response = s3_client.list_objects_v2(
             Bucket=DESTINATION_BUCKET,
             ExpectedBucketOwner=EXPECTED_OWNER,
-            Prefix='processed/'
+            Prefix=PROCESSED_PREFIX
         )
 
         objects_to_delete = []
@@ -459,7 +460,7 @@ def cleanup_processed_files(event: Dict[str, Any], context: Any) -> Dict[str, An
         return {
             'statusCode': 200,
             'headers': {
-                'Content-Type': 'application/json',
+                'Content-Type': APPLICATION_JSON,
                 'Access-Control-Allow-Origin': "ACCESS_CONTROL_ALLOW_ORIGIN"
             },
             'body': json.dumps({
@@ -491,7 +492,7 @@ def copy_file_between_buckets(event: Dict[str, Any], context: Any) -> Dict[str, 
         return {
             'statusCode': 400,
             'headers': {
-                'Content-Type': 'application/json',
+                'Content-Type': APPLICATION_JSON,
                 'Access-Control-Allow-Origin': "ACCESS_CONTROL_ALLOW_ORIGIN"
             },
             'body': json.dumps({
@@ -521,7 +522,7 @@ def copy_file_between_buckets(event: Dict[str, Any], context: Any) -> Dict[str, 
         return {
             'statusCode': 200,
             'headers': {
-                'Content-Type': 'application/json',
+                'Content-Type': APPLICATION_JSON,
                 'Access-Control-Allow-Origin': "ACCESS_CONTROL_ALLOW_ORIGIN"
             },
             'body': json.dumps({
@@ -550,14 +551,14 @@ def perform_health_check(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
 
     # Test source bucket access
     try:
-        s3_client.head_bucket(Bucket=SOURCE_BUCKET)
+        s3_client.head_bucket(Bucket=SOURCE_BUCKET, ExpectedBucketOwner=EXPECTED_OWNER)
         health_status['source_bucket_access'] = 'healthy'
     except Exception as e:
         health_status['source_bucket_access'] = f'error: {str(e)}'
 
     # Test destination bucket access
     try:
-        s3_client.head_bucket(Bucket=DESTINATION_BUCKET)
+        s3_client.head_bucket(Bucket=DESTINATION_BUCKET, ExpectedBucketOwner=EXPECTED_OWNER)
         health_status['destination_bucket_access'] = 'healthy'
     except Exception as e:
         health_status['destination_bucket_access'] = f'error: {str(e)}'
@@ -565,7 +566,7 @@ def perform_health_check(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
     # Test deployment bucket access (if configured)
     if DEPLOYMENT_BUCKET:
         try:
-            s3_client.head_bucket(Bucket=DEPLOYMENT_BUCKET)
+            s3_client.head_bucket(Bucket=DEPLOYMENT_BUCKET, ExpectedBucketOwner=EXPECTED_OWNER,)
             health_status['deployment_bucket_access'] = 'healthy'
         except Exception as e:
             health_status['deployment_bucket_access'] = f'error: {str(e)}'
@@ -578,7 +579,7 @@ def perform_health_check(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
     return {
         'statusCode': 200 if overall_health == 'healthy' else 503,
         'headers': {
-            'Content-Type': 'application/json',
+            'Content-Type': APPLICATION_JSON,
             'Access-Control-Allow-Origin': "ACCESS_CONTROL_ALLOW_ORIGIN"
         },
         # sonarignore:end
