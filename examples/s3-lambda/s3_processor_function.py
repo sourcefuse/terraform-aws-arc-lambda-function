@@ -5,6 +5,7 @@ import os
 import urllib.parse
 from datetime import datetime
 from typing import Dict, Any, List, Optional
+from datetime import datetime, timezone
 
 # Configure logging
 # sonarignore:start
@@ -114,7 +115,7 @@ def handle_s3_event(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
             'error_details': errors,
             'request_id': context.aws_request_id,
             'function_name': context.function_name,
-            'timestamp': datetime.utcnow().isoformat()
+            'timestamp': datetime.now(timezone.utc).isoformat()
         })
     }
 
@@ -193,7 +194,7 @@ def handle_default_processing(event: Dict[str, Any], context: Any) -> Dict[str, 
                 'objects_found': len(objects),
                 'objects_processed': len(processed_files),
                 'processed_files': processed_files,
-                'timestamp': datetime.utcnow().isoformat()
+                'timestamp': datetime.now(timezone.utc).isoformat()
             })
         }
 
@@ -240,7 +241,7 @@ def process_uploaded_file(bucket_name: str, object_key: str) -> Dict[str, Any]:
             'original-bucket': bucket_name,
             'original-key': object_key,
             'processed-by': 'lambda-s3-processor',
-            'processed-at': datetime.utcnow().isoformat(),
+            'processed-at': datetime.now(timezone.utc).isoformat(),
             'environment': ENVIRONMENT
         },
         Tagging=f'Environment={ENVIRONMENT}&ProcessedBy=lambda&OriginalBucket={bucket_name}'
@@ -254,7 +255,7 @@ def process_uploaded_file(bucket_name: str, object_key: str) -> Dict[str, Any]:
         'file_size': file_size,
         'content_type': content_type,
         'last_modified': last_modified.isoformat(),
-        'processing_time': datetime.utcnow().isoformat()
+        'processing_time': datetime.now(timezone.utc).isoformat()
     }
 
 
@@ -429,7 +430,7 @@ def cleanup_processed_files(event: Dict[str, Any], context: Any) -> Dict[str, An
         )
 
         objects_to_delete = []
-        cutoff_date = datetime.utcnow().timestamp() - (days_old * 24 * 60 * 60)
+        cutoff_date = datetime.now(timezone.utc).timestamp() - (days_old * 24 * 60 * 60)
 
         for obj in response.get('Contents', []):
             if obj['LastModified'].timestamp() < cutoff_date:

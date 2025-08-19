@@ -17,7 +17,7 @@ from botocore.exceptions import ClientError
 # sonar-ignore-start
 logger = logging.getLogger()
 logger.setLevel(os.environ.get('LOG_LEVEL', 'INFO'))
-
+APPLICATION_JSON = "application/json"
 # Initialize AWS clients
 s3_client = boto3.client('s3')
 sns_client = boto3.client('sns')
@@ -54,7 +54,7 @@ def send_custom_metric(metric_name, value, unit='Count', dimensions=None):
             'MetricName': metric_name,
             'Value': value,
             'Unit': unit,
-            'Timestamp': datetime.now(time.timezone.utc)
+            'Timestamp': datetime.now(timezone.utc)
         }
 
         if dimensions:
@@ -388,7 +388,7 @@ def handle_api_gateway_event(event):
         return {
             'statusCode': 200,
             'headers': {
-                'Content-Type': 'application/json',
+                'Content-Type': APPLICATION_JSON,
                 'Access-Control-Allow-Origin': '*',
                 'X-Lambda-Function': 'complete-lambda-example'
             },
@@ -400,7 +400,7 @@ def handle_api_gateway_event(event):
         return {
             'statusCode': 500,
             'headers': {
-                'Content-Type': 'application/json',
+                'Content-Type': APPLICATION_JSON,
                 'Access-Control-Allow-Origin': '*'
             },
             'body': json.dumps({'error': str(e), 'source': 'api_gateway'})
@@ -631,7 +631,7 @@ def lambda_handler(event, context):
         return {
             'statusCode': 200,
             'headers': {
-                'Content-Type': 'application/json',
+                'Content-Type': APPLICATION_JSON,
                 'Access-Control-Allow-Origin': '*',
                 'X-Source-Type': source_type,
                 'X-Execution-Time-Ms': str(round(execution_time * 1000, 2)),
@@ -655,7 +655,7 @@ def lambda_handler(event, context):
         return {
             'statusCode': 500,
             'headers': {
-                'Content-Type': 'application/json',
+                 'Content-Type': APPLICATION_JSON,
                 'Access-Control-Allow-Origin': '*',
                 'X-Execution-Time-Ms': str(round(execution_time * 1000, 2)),
                 'X-Error': 'true'

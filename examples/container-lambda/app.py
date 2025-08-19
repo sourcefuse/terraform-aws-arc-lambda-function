@@ -2,7 +2,7 @@ import json
 import logging
 import os
 import sys
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Dict, Any, Optional
 
 import boto3
@@ -10,8 +10,9 @@ import requests
 from botocore.exceptions import ClientError
 from pydantic import BaseModel, ValidationError
 
+
 # Configure structured logging
-# sonarignore:start
+APPLICATION_JSON = "application/json"
 logging.basicConfig(
     level=os.environ.get('LOG_LEVEL', 'INFO'),
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
@@ -61,7 +62,7 @@ def handle_health_check() -> Dict[str, Any]:
     """Handle health check requests"""
     return {
         'status': 'healthy',
-        'timestamp': datetime.utcnow().isoformat(),
+        'timestamp': datetime.now(timezone.utc).isoformat(),
         'version': os.environ.get('APP_VERSION', 'unknown'),
         'environment': os.environ.get('ENVIRONMENT', 'unknown'),
         'python_version': sys.version,
@@ -81,7 +82,7 @@ def handle_external_api_call(url: str) -> Dict[str, Any]:
             'status': 'success',
             'status_code': response.status_code,
             'headers': dict(response.headers),
-            'data': response.json() if response.headers.get('content-type', '').startswith('application/json') else response.text[:500]
+            'data': response.json() if response.headers.get('content-type', '').startswith(APPLICATION_JSON) else response.text[:500]
         }
     except requests.RequestException as e:
         logger.error(f"External API call failed: {e}")
@@ -130,7 +131,7 @@ def lambda_handler(event: Dict[str, Any], context) -> Dict[str, Any]:
             logger.error(f"Event validation failed: {e}")
             return LambdaResponse(
                 statusCode=400,
-                headers={'Content-Type': 'application/json'},
+                headers={'Content-Type': APPLICATION_JSON},
                 body=json.dumps({
                     'error': 'Invalid event structure',
                     'details': str(e),
@@ -172,7 +173,7 @@ def lambda_handler(event: Dict[str, Any], context) -> Dict[str, Any]:
             logger.warning(f"Unknown action: {validated_event.action}")
             return LambdaResponse(
                 statusCode=400,
-                headers={'Content-Type': 'application/json'},
+                headers={'Content-Type': APPLICATION_JSON},
                 body=json.dumps({
                     'error': 'Unknown action',
                     'action': validated_event.action,
@@ -186,7 +187,7 @@ def lambda_handler(event: Dict[str, Any], context) -> Dict[str, Any]:
             'message': f'Container Lambda executed successfully - action: {validated_event.action}',
             'environment_info': environment_info,
             'result': result_data,
-            'timestamp': datetime.utcnow().isoformat()
+            'timestamp': datetime.now(timezone.utc).isoformat()
         }
 
         logger.info(f"Successfully processed action: {validated_event.action}")
@@ -194,7 +195,7 @@ def lambda_handler(event: Dict[str, Any], context) -> Dict[str, Any]:
         return LambdaResponse(
             statusCode=200,
             headers={
-                'Content-Type': 'application/json',
+                'Content-Type': APPLICATION_JSON,
                 'Access-Control-Allow-Origin': '*',
                 'X-Function-Version': context.function_version,
                 'X-Request-ID': context.aws_request_id
@@ -207,7 +208,7 @@ def lambda_handler(event: Dict[str, Any], context) -> Dict[str, Any]:
 
         return LambdaResponse(
             statusCode=500,
-            headers={'Content-Type': 'application/json'},
+            headers={'Content-Type': APPLICATION_JSON},
             body=json.dumps({
                 'error': 'Internal server error',
                 'error_message': str(e),
