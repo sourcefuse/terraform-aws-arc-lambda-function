@@ -60,7 +60,7 @@ def lambda_handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
             'statusCode': 500,
             'headers': {
                 'Content-Type': 'application/json',
-                'Access-Control-Allow-Origin': '*'
+                'Access-Control-Allow-Origin': "ACCESS_CONTROL_ALLOW_ORIGIN"
             },
             'body': json.dumps({
                 'error': 'Internal server error',
@@ -105,7 +105,7 @@ def handle_s3_event(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
         'statusCode': 200 if not errors else 207,  # 207 for partial success
         'headers': {
             'Content-Type': 'application/json',
-            'Access-Control-Allow-Origin': '*'
+            'Access-Control-Allow-Origin': "ACCESS_CONTROL_ALLOW_ORIGIN"
         },
         'body': json.dumps({
             'message': 'S3 event processing completed',
@@ -142,7 +142,7 @@ def handle_manual_action(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
             'statusCode': 400,
             'headers': {
                 'Content-Type': 'application/json',
-                'Access-Control-Allow-Origin': '*'
+                'Access-Control-Allow-Origin': "ACCESS_CONTROL_ALLOW_ORIGIN"
             },
             'body': json.dumps({
                 'error': 'Invalid action',
@@ -181,7 +181,7 @@ def handle_default_processing(event: Dict[str, Any], context: Any) -> Dict[str, 
             'statusCode': 200,
             'headers': {
                 'Content-Type': 'application/json',
-                'Access-Control-Allow-Origin': '*'
+                'Access-Control-Allow-Origin': "ACCESS_CONTROL_ALLOW_ORIGIN"
             },
             'body': json.dumps({
                 'message': 'Default processing completed',
@@ -302,7 +302,7 @@ def list_all_buckets(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
             'statusCode': 200,
             'headers': {
                 'Content-Type': 'application/json',
-                'Access-Control-Allow-Origin': '*'
+                'Access-Control-Allow-Origin': "ACCESS_CONTROL_ALLOW_ORIGIN"
             },
             'body': json.dumps({
                 'message': 'Buckets listed successfully',
@@ -351,7 +351,7 @@ def list_bucket_objects(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
             'statusCode': 200,
             'headers': {
                 'Content-Type': 'application/json',
-                'Access-Control-Allow-Origin': '*'
+                'Access-Control-Allow-Origin': "ACCESS_CONTROL_ALLOW_ORIGIN"
             },
             'body': json.dumps({
                 'message': 'Objects listed successfully',
@@ -401,7 +401,7 @@ def process_batch_files(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
         'statusCode': 200 if not errors else 207,
         'headers': {
             'Content-Type': 'application/json',
-            'Access-Control-Allow-Origin': '*'
+            'Access-Control-Allow-Origin': "ACCESS_CONTROL_ALLOW_ORIGIN"
         },
         'body': json.dumps({
             'message': 'Batch processing completed',
@@ -453,7 +453,7 @@ def cleanup_processed_files(event: Dict[str, Any], context: Any) -> Dict[str, An
             'statusCode': 200,
             'headers': {
                 'Content-Type': 'application/json',
-                'Access-Control-Allow-Origin': '*'
+                'Access-Control-Allow-Origin': "ACCESS_CONTROL_ALLOW_ORIGIN"
             },
             'body': json.dumps({
                 'message': 'Cleanup completed',
@@ -485,7 +485,7 @@ def copy_file_between_buckets(event: Dict[str, Any], context: Any) -> Dict[str, 
             'statusCode': 400,
             'headers': {
                 'Content-Type': 'application/json',
-                'Access-Control-Allow-Origin': '*'
+                'Access-Control-Allow-Origin': "ACCESS_CONTROL_ALLOW_ORIGIN"
             },
             'body': json.dumps({
                 'error': 'Missing required parameter',
@@ -514,7 +514,7 @@ def copy_file_between_buckets(event: Dict[str, Any], context: Any) -> Dict[str, 
             'statusCode': 200,
             'headers': {
                 'Content-Type': 'application/json',
-                'Access-Control-Allow-Origin': '*'
+                'Access-Control-Allow-Origin': "ACCESS_CONTROL_ALLOW_ORIGIN"
             },
             'body': json.dumps({
                 'message': 'File copied successfully',
@@ -571,7 +571,7 @@ def perform_health_check(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
         'statusCode': 200 if overall_health == 'healthy' else 503,
         'headers': {
             'Content-Type': 'application/json',
-            'Access-Control-Allow-Origin': '*'
+            'Access-Control-Allow-Origin': "ACCESS_CONTROL_ALLOW_ORIGIN"
         },
         # sonarignore:end
         'body': json.dumps({
