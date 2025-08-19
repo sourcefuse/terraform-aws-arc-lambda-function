@@ -8,6 +8,7 @@ import urllib.request
 import urllib.error
 from datetime import datetime
 from concurrent.futures import ThreadPoolExecutor, as_completed
+from datetime import datetime, timezone
 
 import boto3
 from botocore.exceptions import ClientError
@@ -52,7 +53,7 @@ def send_custom_metric(metric_name, value, unit='Count', dimensions=None):
             'MetricName': metric_name,
             'Value': value,
             'Unit': unit,
-            'Timestamp': datetime.utcnow()
+            'Timestamp': datetime.now(time.timezone.utc)
         }
 
         if dimensions:
@@ -256,7 +257,7 @@ def handle_s3_event(record):
             'object_key': object_key,
             'object_size': object_size,
             'event_name': event_name,
-            'timestamp': datetime.utcnow().isoformat()
+            'timestamp': datetime.now(timezone.utc).isoformat()
         }
 
         topic_arn = os.environ.get('SNS_TOPIC_ARN')
@@ -275,7 +276,7 @@ def handle_s3_event(record):
             'object_size': object_size,
             'content_type': content_type,
             'last_modified': str(last_modified) if last_modified else None,
-            'processed_at': datetime.utcnow().isoformat()
+            'processed_at': datetime.now(timezone.utc).isoformat()
         }
 
     except Exception as e:
@@ -308,7 +309,7 @@ def handle_sns_event(record):
                 'original_topic': topic_arn,
                 'subject': subject,
                 'message': message_data,
-                'timestamp': datetime.utcnow().isoformat()
+                'timestamp': datetime.now(timezone.utc).isoformat()
             }
             sqs_client.send_message(
                 QueueUrl=sqs_queue_url,
@@ -320,7 +321,7 @@ def handle_sns_event(record):
             'topic_arn': topic_arn,
             'subject': subject,
             'message': message_data,
-            'processed_at': datetime.utcnow().isoformat()
+            'processed_at': datetime.now(timezone.utc).isoformat()
         }
 
     except Exception as e:
@@ -348,7 +349,7 @@ def handle_sqs_event(record):
             'source': 'sqs',
             'message': message_data,
             'receipt_handle': receipt_handle,
-            'processed_at': datetime.utcnow().isoformat()
+            'processed_at': datetime.now(timezone.utc).isoformat()
         }
 
     except Exception as e:
@@ -379,7 +380,7 @@ def handle_api_gateway_event(event):
             'method': http_method,
             'path': path,
             'request_data': request_data,
-            'processed_at': datetime.utcnow().isoformat(),
+            'processed_at': datetime.now(timezone.utc).isoformat(),
             'message': 'API Gateway request processed successfully by complete Lambda example'
         }
 
@@ -429,7 +430,7 @@ def handle_eventbridge_event(event):
             'detail_type': detail_type,
             'detail': detail,
             'maintenance_results': maintenance_results,
-            'processed_at': datetime.utcnow().isoformat()
+            'processed_at': datetime.now(timezone.utc).isoformat()
         }
 
     except Exception as e:
@@ -619,7 +620,7 @@ def lambda_handler(event, context):
             'result': result,
             'request_info': {
                 'request_id': context.aws_request_id,
-                'timestamp': datetime.utcnow().isoformat(),
+                'timestamp': datetime.now(timezone.utc).isoformat(),
                 'source_type': source_type
             }
         }
