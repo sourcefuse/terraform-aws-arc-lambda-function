@@ -28,36 +28,6 @@ output "dead_letter_queue_arn" {
   value       = module.s3_advanced_lambda.lambda_dead_letter_queue_arn
 }
 
-output "deployment_bucket_name" {
-  description = "Name of the S3 bucket for Lambda deployments"
-  value       = aws_s3_bucket.lambda_deployments.bucket
-}
-
-output "deployment_bucket_arn" {
-  description = "ARN of the S3 bucket for Lambda deployments"
-  value       = aws_s3_bucket.lambda_deployments.arn
-}
-
-output "source_bucket_name" {
-  description = "Name of the S3 source bucket"
-  value       = aws_s3_bucket.source_bucket.bucket
-}
-
-output "source_bucket_arn" {
-  description = "ARN of the S3 source bucket"
-  value       = aws_s3_bucket.source_bucket.arn
-}
-
-output "destination_bucket_name" {
-  description = "Name of the S3 destination bucket"
-  value       = aws_s3_bucket.destination_bucket.bucket
-}
-
-output "destination_bucket_arn" {
-  description = "ARN of the S3 destination bucket"
-  value       = aws_s3_bucket.destination_bucket.arn
-}
-
 output "package_s3_key" {
   description = "S3 key of the Lambda deployment package"
   value       = aws_s3_object.lambda_package.key

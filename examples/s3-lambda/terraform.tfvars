@@ -7,9 +7,21 @@ environment   = "dev"
 log_level     = "INFO"
 
 # S3 Bucket Names (must be globally unique - change these!)
-deployment_bucket_name  = "your-unique-lambda-deployments-advanced-bucket"
-source_bucket_name      = "your-unique-source-files-advanced-bucket"
-destination_bucket_name = "your-unique-processed-files-advanced-bucket"
+
+s3_buckets = {
+  bucket1 = {
+    name = "your-unique-lambda-deployments-advanced-bucket"
+    acl  = "private"
+  }
+  bucket2 = {
+    name = "your-unique-source-files-advanced-bucket"
+    acl  = "private"
+  }
+  bucket3 = {
+    name = "your-unique-processed-files-advanced-bucket"
+    acl  = "private"
+  }
+}
 
 # File Processing Configuration
 processing_prefix     = "incoming/"

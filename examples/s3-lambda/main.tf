@@ -29,114 +29,16 @@ module "tags" {
 }
 
 # Create S3 bucket for Lambda deployment packages
-resource "aws_s3_bucket" "lambda_deployments" {
-  bucket = var.deployment_bucket_name
 
-  tags = {
-    Environment = var.environment
-    Project     = "lambda-terraform-module"
-    Purpose     = "lambda-deployments"
-  }
-}
+module "s3" {
+  source  = "sourcefuse/arc-s3/aws"
+  version = "0.0.4"
 
-resource "aws_s3_bucket_versioning" "lambda_deployments" {
-  bucket = aws_s3_bucket.lambda_deployments.id
-  versioning_configuration {
-    status = "Enabled"
-  }
-}
+  for_each = var.s3_buckets
 
-resource "aws_s3_bucket_server_side_encryption_configuration" "lambda_deployments" {
-  bucket = aws_s3_bucket.lambda_deployments.id
-
-  rule {
-    apply_server_side_encryption_by_default {
-      sse_algorithm = "AES256"
-    }
-  }
-}
-
-resource "aws_s3_bucket_public_access_block" "lambda_deployments" {
-  bucket = aws_s3_bucket.lambda_deployments.id
-
-  block_public_acls       = true
-  block_public_policy     = true
-  ignore_public_acls      = true
-  restrict_public_buckets = true
-}
-
-# Create S3 bucket for processing (source bucket)
-resource "aws_s3_bucket" "source_bucket" {
-  bucket = var.source_bucket_name
-
-  tags = {
-    Environment = var.environment
-    Project     = "lambda-terraform-module"
-    Purpose     = "file-processing"
-  }
-}
-
-resource "aws_s3_bucket_versioning" "source_bucket" {
-  bucket = aws_s3_bucket.source_bucket.id
-  versioning_configuration {
-    status = "Enabled"
-  }
-}
-
-resource "aws_s3_bucket_server_side_encryption_configuration" "source_bucket" {
-  bucket = aws_s3_bucket.source_bucket.id
-
-  rule {
-    apply_server_side_encryption_by_default {
-      sse_algorithm = "AES256"
-    }
-  }
-}
-
-resource "aws_s3_bucket_public_access_block" "source_bucket" {
-  bucket = aws_s3_bucket.source_bucket.id
-
-  block_public_acls       = true
-  block_public_policy     = true
-  ignore_public_acls      = true
-  restrict_public_buckets = true
-}
-
-# Create S3 bucket for processed files (destination bucket)
-resource "aws_s3_bucket" "destination_bucket" {
-  bucket = var.destination_bucket_name
-
-  tags = {
-    Environment = var.environment
-    Project     = "lambda-terraform-module"
-    Purpose     = "processed-files"
-  }
-}
-
-resource "aws_s3_bucket_versioning" "destination_bucket" {
-  bucket = aws_s3_bucket.destination_bucket.id
-  versioning_configuration {
-    status = "Enabled"
-  }
-}
-
-resource "aws_s3_bucket_server_side_encryption_configuration" "destination_bucket" {
-  bucket = aws_s3_bucket.destination_bucket.id
-
-  rule {
-    apply_server_side_encryption_by_default {
-      sse_algorithm = "AES256"
-    }
-  }
-}
-
-resource "aws_s3_bucket_public_access_block" "destination_bucket" {
-  bucket = aws_s3_bucket.destination_bucket.id
-
-  block_public_acls       = true
-  block_public_policy     = true
-  ignore_public_acls      = true
-  restrict_public_buckets = true
+  name = each.value.name
+  acl  = each.value.acl
+  tags = module.tags.tags
 }
 
 # Create Lambda deployment package
@@ -145,8 +47,8 @@ data "archive_file" "lambda_zip" {
   output_path = "s3_processor_function.zip"
   source {
     content = templatefile("${path.module}/s3_processor_function.py", {
-      source_bucket      = aws_s3_bucket.source_bucket.bucket
-      destination_bucket = aws_s3_bucket.destination_bucket.bucket
+      source_bucket      = module.s3["bucket2"].bucket_id
+      destination_bucket = module.s3["bucket3"].bucket_id
     })
     filename = "lambda_function.py"
   }
@@ -154,7 +56,7 @@ data "archive_file" "lambda_zip" {
 
 # Upload Lambda package to S3
 resource "aws_s3_object" "lambda_package" {
-  bucket = aws_s3_bucket.lambda_deployments.bucket
+  bucket = module.s3["bucket1"].bucket_id
   key    = "lambda-packages/${var.function_name}/${data.archive_file.lambda_zip.output_md5}.zip"
   source = data.archive_file.lambda_zip.output_path
   etag   = data.archive_file.lambda_zip.output_md5
@@ -178,7 +80,7 @@ module "s3_advanced_lambda" {
   timeout       = 300
 
   # S3 deployment package
-  s3_bucket         = aws_s3_bucket.lambda_deployments.bucket
+  s3_bucket         = module.s3["bucket1"].bucket_id
   s3_key            = aws_s3_object.lambda_package.key
   s3_object_version = aws_s3_object.lambda_package.version_id
   source_code_hash  = data.archive_file.lambda_zip.output_base64sha256
@@ -187,9 +89,9 @@ module "s3_advanced_lambda" {
   environment_variables = {
     ENVIRONMENT        = var.environment
     LOG_LEVEL          = var.log_level
-    SOURCE_BUCKET      = aws_s3_bucket.source_bucket.bucket
-    DESTINATION_BUCKET = aws_s3_bucket.destination_bucket.bucket
-    DEPLOYMENT_BUCKET  = aws_s3_bucket.lambda_deployments.bucket
+    SOURCE_BUCKET      = module.s3["bucket2"].bucket_id
+    DESTINATION_BUCKET = module.s3["bucket3"].bucket_id
+    DEPLOYMENT_BUCKET  = module.s3["bucket1"].bucket_id
     PROCESSING_PREFIX  = var.processing_prefix
   }
 
@@ -222,7 +124,7 @@ module "s3_advanced_lambda" {
 
 # S3 Event Notification to trigger Lambda
 resource "aws_s3_bucket_notification" "source_bucket_notification" {
-  bucket = aws_s3_bucket.source_bucket.id
+  bucket = module.s3["bucket2"].bucket_id
 
   lambda_function {
     lambda_function_arn = module.s3_advanced_lambda.lambda_function_arn
@@ -240,7 +142,7 @@ resource "aws_lambda_permission" "allow_s3_invoke" {
   action        = "lambda:InvokeFunction"
   function_name = module.s3_advanced_lambda.lambda_function_name
   principal     = "s3.amazonaws.com"
-  source_arn    = aws_s3_bucket.source_bucket.arn
+  source_arn    = module.s3["bucket2"].bucket_arn
 }
 
 # CloudWatch Alarm for Lambda errors

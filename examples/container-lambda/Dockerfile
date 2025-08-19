@@ -17,8 +17,6 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Copy function code
 COPY app.py ${LAMBDA_TASK_ROOT}/
 
-# # Copy any additional files
-# COPY config/ ${LAMBDA_TASK_ROOT}/config/ 2>/dev/null || true
 
 # Set the CMD to your handler
 CMD ["app.lambda_handler"]

@@ -9,24 +9,14 @@ variable "function_name" {
   type        = string
   default     = "s3-advanced-processor"
 }
-
-variable "deployment_bucket_name" {
-  description = "S3 bucket name for Lambda deployment packages (must be globally unique)"
-  type        = string
-  default     = "lambda-deployments-advanced-example"
+variable "s3_buckets" {
+  description = "Map of S3 buckets to create"
+  type = map(object({
+    name = string
+    acl  = string
+  }))
 }
 
-variable "source_bucket_name" {
-  description = "S3 bucket name for source files to be processed (must be globally unique)"
-  type        = string
-  default     = "s3-source-files-advanced-example"
-}
-
-variable "destination_bucket_name" {
-  description = "S3 bucket name for processed files (must be globally unique)"
-  type        = string
-  default     = "s3-processed-files-advanced-example"
-}
 
 variable "environment" {
   description = "Environment name"
