@@ -286,7 +286,7 @@ variable "additional_policy_arns" {
   type        = list(string)
   default     = []
 }
-variable "inline_policies" {
+variable "additional_policy_docs" {
   type        = list(string)
   default     = []
   description = "List of inline IAM policy JSON documents"
