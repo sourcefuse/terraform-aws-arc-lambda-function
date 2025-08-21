@@ -23,7 +23,7 @@ data "aws_iam_policy_document" "assume_role" {
 
 resource "aws_iam_role" "default" {
   count              = var.role_arn == null ? 1 : 0
-  name               = "${var.function_name}_execution_role"
+  name               = "${var.function_name}-execution-role"
   assume_role_policy = data.aws_iam_policy_document.assume_role.json
 }
 
