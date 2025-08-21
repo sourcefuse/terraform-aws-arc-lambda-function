@@ -39,6 +39,14 @@ resource "aws_iam_role_policy_attachment" "additional" {
   role       = aws_iam_role.default[0].name
   policy_arn = var.additional_policy_arns[count.index]
 }
+
+# Add inline policies (provided as JSON documents)
+resource "aws_iam_role_policy" "inline" {
+  count  = var.role_arn == null ? length(var.inline_policies) : 0
+  name   = "${var.function_name}-inline-${count.index}"
+  role   = aws_iam_role.default[0].id
+  policy = var.inline_policies[count.index]
+}
 # =============================================================================
 # CLOUDWATCH LOG GROUP
 # =============================================================================
