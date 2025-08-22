@@ -1,0 +1,5 @@
+aws_region     = "us-east-1"
+function_name  = "basic-lambda-example"
+environment    = "dev"
+log_level      = "INFO"
+lambda_message = "Hello from Basic Lambda Example!"
