@@ -33,6 +33,8 @@ Creates AWS Lambda functions with IAM roles, VPC configuration, environment vari
 - X-Ray tracing
 - CloudWatch log group with retention
 
+For more information about this repository and its usage, please see [Terraform AWS LAMBDA FUNCTION Usage Guide](https://github.com/sourcefuse/terraform-aws-arc-lambda-function/blob/main/docs/module-usage-guide/README.md).
+
 ## Quickstart
 
 ```hcl
