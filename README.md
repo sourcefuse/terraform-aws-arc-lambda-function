@@ -3,9 +3,11 @@
 # [terraform-aws-arc-lambda-function](https://github.com/sourcefuse/terraform-aws-arc-lambda-function)
 
 > **Module:** `sourcefuse/arc-lambda-function/aws`
+
 > **Registry:** [https://registry.terraform.io/modules/sourcefuse/arc-lambda-function/aws](https://registry.terraform.io/modules/sourcefuse/arc-lambda-function/aws)
+
 > **Category:** Compute / Serverless
-> **Terraform:** `>= 1.3`
+
 > **Source:** [https://github.com/sourcefuse/terraform-aws-arc-lambda-function](https://github.com/sourcefuse/terraform-aws-arc-lambda-function)
 
 [![Latest Release](https://img.shields.io/github/release/sourcefuse/terraform-aws-arc-lambda-function.svg?style=for-the-badge)](https://github.com/sourcefuse/terraform-aws-arc-lambda-function/releases/latest)
