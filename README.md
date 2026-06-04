@@ -21,6 +21,10 @@
 
 Creates AWS Lambda functions with IAM roles, VPC configuration, environment variables, layers, event source mappings, and CloudWatch log groups.
 
+## Architecture
+
+![Architecture Diagram](./static/arch.png)
+
 ## What It Does
 
 - Lambda function with configurable runtime, handler, and memory
