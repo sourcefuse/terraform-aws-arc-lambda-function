@@ -17,6 +17,9 @@
 
 [![Quality gate](https://sonarcloud.io/api/project_badges/quality_gate?project=sourcefuse_terraform-aws-arc-lambda-function&token=2eef08aeb73594436eea462afe0bd790c9ae3841)](https://sonarcloud.io/summary/new_code?id=sourcefuse_terraform-aws-arc-lambda-function)
 
+> [!TIP]
+> 🤖 **New:** Use this module with AI assistants via the [ARC IaC MCP Server](https://github.com/sourcefuse/arc-iac-mcp) — search, scaffold, and security-scan ARC modules from natural language. [Quick setup ↓](#ai-assistant-integration-arc-iac-mcp)
+
 ## Overview
 
 Creates AWS Lambda functions with IAM roles, VPC configuration, environment variables, layers, event source mappings, and CloudWatch log groups.
