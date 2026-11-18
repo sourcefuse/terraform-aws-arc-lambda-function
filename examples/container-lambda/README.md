@@ -14,7 +14,7 @@ This example demonstrates how to deploy an AWS Lambda function using container i
 
 - Docker installed and running
 - AWS CLI configured
-- Terraform >= 1.3.0
+- Terraform >= 1.17.0
 
 ## Usage
 
@@ -45,23 +45,23 @@ This example demonstrates how to deploy an AWS Lambda function using container i
 
 | Name | Version |
 |------|---------|
-| <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) | >= 1.3.0 |
-| <a name="requirement_aws"></a> [aws](#requirement\_aws) | >= 5.0 |
+| <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) | >= 1.17.0 |
+| <a name="requirement_aws"></a> [aws](#requirement\_aws) | ~> 6.0 |
 | <a name="requirement_docker"></a> [docker](#requirement\_docker) | >= 3.0 |
 
 ## Providers
 
 | Name | Version |
 |------|---------|
-| <a name="provider_aws"></a> [aws](#provider\_aws) | 6.7.0 |
-| <a name="provider_docker"></a> [docker](#provider\_docker) | 3.6.2 |
+| <a name="provider_aws"></a> [aws](#provider\_aws) | 6.73.0 |
+| <a name="provider_docker"></a> [docker](#provider\_docker) | 4.7.0 |
 
 ## Modules
 
 | Name | Source | Version |
 |------|--------|---------|
 | <a name="module_container_lambda"></a> [container\_lambda](#module\_container\_lambda) | ../../ | n/a |
-| <a name="module_tags"></a> [tags](#module\_tags) | sourcefuse/arc-tags/aws | 1.2.6 |
+| <a name="module_tags"></a> [tags](#module\_tags) | sourcefuse/arc-tags/aws | 1.2.9 |
 
 ## Resources
 
@@ -71,9 +71,7 @@ This example demonstrates how to deploy an AWS Lambda function using container i
 | [aws_ecr_repository.lambda_container](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/ecr_repository) | resource |
 | [docker_image.lambda_container](https://registry.terraform.io/providers/kreuzwerker/docker/latest/docs/resources/image) | resource |
 | [docker_registry_image.lambda_container](https://registry.terraform.io/providers/kreuzwerker/docker/latest/docs/resources/registry_image) | resource |
-| [aws_caller_identity.current](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/caller_identity) | data source |
 | [aws_ecr_authorization_token.token](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/ecr_authorization_token) | data source |
-| [aws_region.current](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/region) | data source |
 
 ## Inputs
 
@@ -90,12 +88,7 @@ This example demonstrates how to deploy an AWS Lambda function using container i
 
 | Name | Description |
 |------|-------------|
-| <a name="output_container_image_uri"></a> [container\_image\_uri](#output\_container\_image\_uri) | URI of the container image used by Lambda |
-| <a name="output_docker_image_id"></a> [docker\_image\_id](#output\_docker\_image\_id) | ID of the Docker image |
-| <a name="output_ecr_repository_arn"></a> [ecr\_repository\_arn](#output\_ecr\_repository\_arn) | ARN of the ECR repository |
-| <a name="output_ecr_repository_url"></a> [ecr\_repository\_url](#output\_ecr\_repository\_url) | URL of the ECR repository |
-| <a name="output_lambda_function_arn"></a> [lambda\_function\_arn](#output\_lambda\_function\_arn) | ARN of the Lambda function |
-| <a name="output_lambda_function_name"></a> [lambda\_function\_name](#output\_lambda\_function\_name) | Name of the Lambda function |
-| <a name="output_lambda_function_version"></a> [lambda\_function\_version](#output\_lambda\_function\_version) | Version of the Lambda function |
-| <a name="output_lambda_role_arn"></a> [lambda\_role\_arn](#output\_lambda\_role\_arn) | ARN of the Lambda execution role |
+| <a name="output_arn"></a> [arn](#output\_arn) | ARN of the Lambda function |
+| <a name="output_name"></a> [name](#output\_name) | Name of the Lambda function |
+| <a name="output_version"></a> [version](#output\_version) | Version of the Lambda function |
 <!-- END_TF_DOCS -->

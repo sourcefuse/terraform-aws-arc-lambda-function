@@ -1,14 +1,14 @@
 terraform {
-  required_version = ">= 1.3.0"
+  required_version = ">= 1.17.0"
 
   required_providers {
     aws = {
       source  = "hashicorp/aws"
-      version = ">= 5.0"
+      version = "~> 6.0"
     }
     archive = {
       source  = "hashicorp/archive"
-      version = ">= 2.0"
+      version = "~> 2.7"
     }
   }
 }
@@ -18,7 +18,7 @@ provider "aws" {
 }
 module "tags" {
   source  = "sourcefuse/arc-tags/aws"
-  version = "1.2.6"
+  version = "1.2.9"
 
   environment = terraform.workspace
   project     = "terraform-aws-arc-lambda"
@@ -32,7 +32,7 @@ module "tags" {
 
 module "s3" {
   source  = "sourcefuse/arc-s3/aws"
-  version = "0.0.4"
+  version = "0.0.9"
 
   for_each = var.s3_buckets
 

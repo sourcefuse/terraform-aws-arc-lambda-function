@@ -41,9 +41,9 @@ jobs:
           go-version: '1.24'
 
       - name: Set up Terraform
-        uses: hashicorp/setup-terraform@v2
+        uses: hashicorp/setup-terraform@v3
         with:
-          terraform_version: 1.7.5
+          terraform_version: 1.17.2
           terraform_wrapper: false
 
       - name: Create test directory and download go from S3
