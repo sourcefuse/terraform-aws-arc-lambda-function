@@ -1,10 +1,10 @@
 terraform {
-  required_version = ">= 1.3.0"
+  required_version = ">= 1.17.0"
 
   required_providers {
     aws = {
       source  = "hashicorp/aws"
-      version = ">= 5.0"
+      version = "~> 6.0"
     }
     docker = {
       source  = "kreuzwerker/docker"
@@ -18,7 +18,7 @@ provider "aws" {
 }
 module "tags" {
   source  = "sourcefuse/arc-tags/aws"
-  version = "1.2.6"
+  version = "1.2.9"
 
   environment = terraform.workspace
   project     = "terraform-aws-arc-lambda"
