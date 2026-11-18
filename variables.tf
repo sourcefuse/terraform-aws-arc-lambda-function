@@ -15,20 +15,7 @@ variable "function_name" {
 variable "runtime" {
   description = "Runtime for the Lambda function (e.g., python3.9, nodejs18.x, java11, etc.)"
   type        = string
-  default     = "python3.9"
-
-  validation {
-    condition = contains([
-      "nodejs18.x", "nodejs20.x",
-      "python3.8", "python3.9", "python3.10", "python3.11", "python3.12",
-      "java8.al2", "java11", "java17", "java21",
-      "dotnet6", "dotnet8",
-      "go1.x",
-      "ruby3.2", "ruby3.3",
-      "provided.al2", "provided.al2023"
-    ], var.runtime)
-    error_message = "Runtime must be a valid AWS Lambda runtime."
-  }
+  default     = "python3.12"
 }
 
 # =============================================================================
